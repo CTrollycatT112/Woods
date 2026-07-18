@@ -276,7 +276,6 @@ STATIC UCHAR InbvDisplayFont[4096] = {
     0x00, 0x00, 0x24, 0x24, 0x00, 0x00, 0x42, 0x42, 0x42, 0x42, 0x42, 0x26, 0x1a, 0x02, 0x02, 0x3c,
 };
 
-STATIC
 VOLATILE
 LIMINE_REQUEST
 struct limine_framebuffer_request framebuffer_request = 
@@ -286,9 +285,11 @@ struct limine_framebuffer_request framebuffer_request =
     .response = NULL
 };
 
-limine_framebuffer *framebuffer          = NULL;
+struct 
+limine_framebuffer *VOLATILE framebuffer = NULL;
 
-STATIC flanterm_context* InbvTermContext = NULL;
+STATIC
+flanterm_context* VOLATILE InbvTermContext = NULL;
 
 ULONG64 InbvScreenWidth  = 0;
 ULONG64 InbvScreenHeight = 0;
@@ -382,9 +383,9 @@ namespace Inbv
             return;
         }
 
-        for (ULONG X = Left; X < Right; X++)
+        for (ULONG Y = Top; Y < Bottom; Y++)
         {
-            for (ULONG Y = Top; Y <Bottom; Y++)
+            for (ULONG X = Left; X < Right; X++)
             {
                 PlotPixel(Color, X, Y);
             }
@@ -410,6 +411,7 @@ namespace Inbv
                     framebuffer->width,
                     framebuffer->height,
                     INBV_COLOR_BLUE);
+
 
         ULONG32 DefaultBg = INBV_COLOR_BLUE;
         ULONG32 DefaultFg = INBV_COLOR_WHITE;

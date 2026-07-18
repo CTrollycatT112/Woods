@@ -74,10 +74,12 @@ CXXFLAGS := $(CXXSTD) $(COMMONFLAGS) -Wall -Wextra -Werror \
 LDFLAGS := -nostdlib -static -m elf_x86_64 -z max-page-size=0x1000 -T $(LINKSCRIPT)
 
 ifeq ($(BUILD),chk)
+CFLAGS   += -O0 -g -DHTOS_CHK=1
 CXXFLAGS += -O0 -g -DHTOS_CHK=1
 endif
 
 ifeq ($(BUILD),fre)
+CFLAGS   += -O2 -DHTOS_CHK=0
 CXXFLAGS += -O2 -DHTOS_CHK=0
 endif
 
@@ -94,10 +96,11 @@ fre:
 kernel: $(NTOSKRNLPATH)
 
 dirs:
-	@mkdir -p $(OUTPATH)/chk/obj
-	@mkdir -p $(OUTPATH)/chk/system32/drivers
-	@mkdir -p $(OUTPATH)/fre/obj
-	@mkdir -p $(OUTPATH)/fre/system32/drivers
+	@mkdir -p $(BUILDPATH)
+	@mkdir -p $(OBJPATH)
+	@mkdir -p $(SYSTEM32PATH)
+	@mkdir -p $(DRIVERSPATH)
+
 
 $(NTOSKRNLPATH): dirs $(OBJS)
 	@$(call LOGLD,$(NTOSKRNLNAME))
@@ -108,12 +111,12 @@ $(OBJPATH)/%.cpp.o: src/%.cpp
 	@$(call LOGCXX,$<)
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(FLANTERM_CORE_OBJ): $(FLANTERMPATH)/src/flanterm.c
+$(OBJPATH)/flanterm/%.o: $(FLANTERMPATH)/src/%.c
 	@mkdir -p $(dir $@)
 	@printf "  $(COLOR_CYAN)[ CC ]$(COLOR_RESET)    %s\n" "$<"
 	@$(CC) $(CFLAGS) -c $< -o $@
 
-$(FLANTERM_FB_OBJ): $(FLANTERMPATH)/src/flanterm_backends/fb.c
+$(OBJPATH)/flanterm/backends/%.o: $(FLANTERMPATH)/src/flanterm_backends/%.c
 	@mkdir -p $(dir $@)
 	@printf "  $(COLOR_CYAN)[ CC ]$(COLOR_RESET)    %s\n" "$<"
 	@$(CC) $(CFLAGS) -c $< -o $@

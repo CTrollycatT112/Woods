@@ -23,6 +23,10 @@ SECTIONS
         __TextEnd = .;
     } :text
 
+    .limine_requests : {
+        KEEP(*(.limine_requests .limine_requests.*))
+    } :text
+
     . += CONSTANT(MAXPAGESIZE);
 
     .rodata : {

@@ -14,12 +14,11 @@ ABSTRACT: Kernel entry point
 
 #include "inbv/inbv.hpp"
 
-STATIC 
-VOLATILE 
+VOLATILE
 LIMINE_REQUEST 
-QWORD BaseRevision[] = LIMINE_BASE_REVISION(3);
+QWORD
+BaseRevision[] = LIMINE_BASE_REVISION(3);
 
-STATIC
 VOLATILE
 LIMINE_REQUEST
 struct limine_memmap_request memmap_request =
@@ -36,7 +35,7 @@ namespace Ki
     ROUTINE: SystemStartup
 
     DESCRIPTION: Kernel entry point
-    
+
     ARGUMENTS: N/A
 
     RETURNS: NORETURN
@@ -47,20 +46,14 @@ namespace Ki
     CODESEG(".text.startup")
     VOID SystemStartup()
     {
-        if (LIMINE_BASE_REVISION_SUPPORTED(BaseRevision) == false)
+        if (LIMINE_BASE_REVISION_SUPPORTED(BaseRevision) == FALSE)
         {
             for (;;);
         }
 
         Inbv::Initialize();
         Inbv::WriteString("GDT init... Ok\r\n");
-        Inbv::WriteString("GDT init... Ok\r\n");
-        Inbv::WriteString("GDT init... Ok\r\n");
-        Inbv::WriteString("GDT init... Ok\r\n");
-        Inbv::WriteString("GDT init... Ok\r\n");
-        Inbv::WriteString("GDT init... Ok\r\n");
-        Inbv::WriteString("GDT init... Ok\r\n");
 
         for (;;);
-    }
-} // namespce Ki
+    } 
+} // namespace Ki
