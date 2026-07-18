@@ -58,6 +58,10 @@ ABSTRACT: Defines macro's used across the project (like NODISCARD)
 #define VOLATILE volatile
 #endif
 
+#ifndef EXTERN
+#define EXTERN extern
+#endif
+
 #ifndef FALSE
 #define FALSE 0
 #endif

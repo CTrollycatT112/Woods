@@ -6,12 +6,10 @@ MODULE: Memory utils
 
 AUTHOR: Trollycat
 
-ABSTRACT: Bare bones memory functions so flanterm will shutup
+ABSTRACT: Bare bones memory functions so flanterm will work
 
 --*/
-
 #include "htbase.hpp"
-#include "htdef.hpp"
 
 EXTERN_C {
     

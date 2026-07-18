@@ -12,20 +12,12 @@ ABSTRACT: Kernel entry point
 #include "htbase.hpp"
 #include "limine.h"
 
+#include "inbv/inbv.hpp"
+
 STATIC 
 VOLATILE 
 LIMINE_REQUEST 
 QWORD BaseRevision[] = LIMINE_BASE_REVISION(3);
-
-STATIC
-VOLATILE
-LIMINE_REQUEST
-struct limine_framebuffer_request framebuffer_request = 
-{
-    .id = LIMINE_FRAMEBUFFER_REQUEST_ID,
-    .revision = 0,
-    .response = NULL
-};
 
 STATIC
 VOLATILE
@@ -60,11 +52,14 @@ namespace Ki
             for (;;);
         }
 
-        if (framebuffer_request.response == NULL
-            || framebuffer_request.response->framebuffer_count < 1)
-        {
-            for (;;);   
-        }
+        Inbv::Initialize();
+        Inbv::WriteString("GDT init... Ok\r\n");
+        Inbv::WriteString("GDT init... Ok\r\n");
+        Inbv::WriteString("GDT init... Ok\r\n");
+        Inbv::WriteString("GDT init... Ok\r\n");
+        Inbv::WriteString("GDT init... Ok\r\n");
+        Inbv::WriteString("GDT init... Ok\r\n");
+        Inbv::WriteString("GDT init... Ok\r\n");
 
         for (;;);
     }

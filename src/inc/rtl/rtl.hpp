@@ -13,16 +13,21 @@ ABSTRACT Bare bones RTL functions
 
 #include "htbase.hpp"
 
+#define RtlUpperChar(c)               ((c) >= 'a' && (c) <= 'z' ? (c) - ' ' : (c))
+#define RtlLowerChar(c)               ((c) >= 'A' && (c) <= 'Z' ? (c) + ' ' : (c))
+
 EXTERN_C {
     PVOID memset(PVOID Dest, INT Ch, QWORD Count);
     PVOID memcpy(PVOID Dest, PCVOID Src, QWORD Count);
     PVOID memmove(PVOID Dest, PCVOID Src, QWORD Count);
     INT   memcmp(PCVOID Lhs, PCVOID Rhs, QWORD Count);
+
+    ULONG64 strlen(CONST CHAR* String);
 }
 
 namespace Rtl 
 {
-    STATIC
+    INLINE
     HTAPI 
     VOID 
     FillMemory(PVOID Destination, 
@@ -32,7 +37,7 @@ namespace Rtl
         ::memset(Destination, Fill, Length);
     }
 
-    STATIC
+    INLINE
     HTAPI 
     VOID 
     ZeroMemory(PVOID Destination, 
@@ -41,7 +46,7 @@ namespace Rtl
         ::memset(Destination, 0, Length);
     }
 
-    STATIC
+    INLINE
     HTAPI 
     VOID 
     CopyMemory(PVOID Destination, 
@@ -51,7 +56,7 @@ namespace Rtl
         ::memcpy(Destination, Source, Length);
     }
 
-    STATIC
+    INLINE
     HTAPI 
     VOID 
     MoveMemory(PVOID Destination, 
@@ -61,7 +66,7 @@ namespace Rtl
         ::memmove(Destination, Source, Length);
     }
 
-    STATIC
+    INLINE
     HTAPI 
     QWORD 
     CompareMemory(PCVOID Source1, 
@@ -78,4 +83,12 @@ namespace Rtl
 
         return MatchCount;
     }
-}
+
+    INLINE
+    HTAPI
+    ULONG64
+    AnsiStringLength(PCSTR String)
+    {
+        return ::strlen(String);
+    }
+} // namespace Rtl
