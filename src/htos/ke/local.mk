@@ -1,0 +1,1 @@
+SRCS += src/htos/ke/krnlinit.cpp

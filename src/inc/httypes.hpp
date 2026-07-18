@@ -81,6 +81,8 @@ typedef CONST WCHAR *PCUNZWCH;
 typedef CONST WCHAR *LPCWCHAR, *PCWCHAR;
 typedef CONST WCHAR *LPCUWCHAR, *PCUWCHAR;
 
+typedef CONST UCHAR *PCUCHAR;
+
 typedef char CCHAR;
 typedef CCHAR *PCCHAR;
 typedef short CSHORT, *PCSHORT;

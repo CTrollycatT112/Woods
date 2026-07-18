@@ -35,7 +35,11 @@ ABSTRACT: Defines macro's used across the project (like NODISCARD)
 #define EXTERN_C extern "C"
 #endif
 
-#define HTAPI __stdcall
+#define IN
+#define OUT
+#define IN_OUT
+
+#define HTAPI
 #define __TEXT(qoute) L##qoute
 
 #ifndef CONST
@@ -48,6 +52,22 @@ ABSTRACT: Defines macro's used across the project (like NODISCARD)
 
 #ifndef STATIC
 #define STATIC static
+#endif
+
+#ifndef VOLATILE
+#define VOLATILE volatile
+#endif
+
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef NULL
+#define NULL nullptr
 #endif
 
 #ifndef INLINE
@@ -72,6 +92,10 @@ ABSTRACT: Defines macro's used across the project (like NODISCARD)
 
 #ifndef CODESEG
 #define CODESEG(x) __attribute__((section(x)))
+#endif
+
+#ifndef LIMINE_REQUEST
+#define LIMINE_REQUEST __attribute__((used, section(".limine_requests")))
 #endif
 
 #ifndef ISALIGNED

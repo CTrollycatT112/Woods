@@ -17,6 +17,7 @@ SYSTEM32PATH := $(BUILDPATH)/system32
 DRIVERSPATH := $(SYSTEM32PATH)/drivers
 
 LIMINEPATH := $(ROOTPATH)/vendor/limine
+FLANTERMPATH := $(ROOTPATH)/vendor/flanterm
 INCPATH := $(ROOTPATH)/src/inc
 SCRIPTSPATH := $(ROOTPATH)/tools/scripts
 
@@ -50,19 +51,25 @@ ASMSRCS := $(filter %.asm,$(SRCS))
 CPPOBJS := $(patsubst src/%.cpp,$(OBJPATH)/%.cpp.o,$(CPPSRCS))
 ASMOBJS := $(patsubst src/%.asm,$(OBJPATH)/%.asm.o,$(ASMSRCS))
 
-OBJS := $(CPPOBJS) $(ASMOBJS)
-DEPS := $(CPPOBJS:.o=.d)
+FLANTERM_CORE_OBJ := $(OBJPATH)/flanterm/flanterm.o
+FLANTERM_FB_OBJ := $(OBJPATH)/flanterm/backends/fb.o
+FLANTERMOBJS := $(FLANTERM_CORE_OBJ) $(FLANTERM_FB_OBJ)
+
+OBJS := $(CPPOBJS) $(ASMOBJS) $(FLANTERMOBJS)
+DEPS := $(OBJS:.o=.d)
 
 CXXSTD := -std=c++23
 
-COMMONFLAGS := -ffreestanding -fno-stack-protector -fno-stack-check \
+COMMONFLAGS := -ffreestanding -fno-builtin -fno-stack-protector -fno-stack-check \
     -fno-lto -fno-pic -fno-pie -m64 -march=x86-64 \
     -mno-80387 -mno-mmx -mno-3dnow -mno-sse -mno-sse2 \
     -mno-red-zone -mgeneral-regs-only -mcmodel=kernel
 
+CFLAGS := $(COMMONFLAGS) -Wall -Wextra -Werror -I$(FLANTERMPATH)/src -MMD -MP
+
 CXXFLAGS := $(CXXSTD) $(COMMONFLAGS) -Wall -Wextra -Werror \
     -fno-exceptions -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables \
-    -I$(INCPATH) -I$(LIMINEPATH) -MMD -MP
+    -I$(INCPATH) -I$(LIMINEPATH) -I$(FLANTERMPATH)/src -MMD -MP
 
 LDFLAGS := -nostdlib -static -m elf_x86_64 -z max-page-size=0x1000 -T $(LINKSCRIPT)
 
@@ -100,6 +107,16 @@ $(OBJPATH)/%.cpp.o: src/%.cpp
 	@mkdir -p $(dir $@)
 	@$(call LOGCXX,$<)
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(FLANTERM_CORE_OBJ): $(FLANTERMPATH)/src/flanterm.c
+	@mkdir -p $(dir $@)
+	@printf "  $(COLOR_CYAN)[ CC ]$(COLOR_RESET)    %s\n" "$<"
+	@$(CC) $(CFLAGS) -c $< -o $@
+
+$(FLANTERM_FB_OBJ): $(FLANTERMPATH)/src/flanterm_backends/fb.c
+	@mkdir -p $(dir $@)
+	@printf "  $(COLOR_CYAN)[ CC ]$(COLOR_RESET)    %s\n" "$<"
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJPATH)/%.asm.o: src/%.asm
 	@mkdir -p $(dir $@)
