@@ -14,6 +14,7 @@ ABSTRACT: Standard library functions and RTL wrappers
 #include "htbase.hpp"
 
 #include "inbv/inbv.hpp"
+#include "hal/kdcom.hpp"
 
 //
 // Converts (c) to uppercase 
@@ -584,6 +585,19 @@ namespace Rtl
 
         Inbv::WriteString(Buffer);
         Inbv::WriteString("\r\n");
+
+        UINT Length = 0;
+        while (Buffer[Length] != '\0' && Length < 512)
+        {
+            Length++;
+        }
+
+        Hal::Kd::Write(SERIAL_COM1_BASE,
+                       Buffer,
+                       Length);
+        Hal::Kd::Write(SERIAL_COM1_BASE,
+                       (PCHAR)"\r\n",
+                       2);
     }
     
     /*++

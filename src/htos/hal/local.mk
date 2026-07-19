@@ -1,0 +1,1 @@
+SRCS += src/htos/hal/kdcom.cpp

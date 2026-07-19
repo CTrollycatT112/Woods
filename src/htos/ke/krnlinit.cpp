@@ -14,6 +14,7 @@ ABSTRACT: Kernel entry point
 
 #include "rtl/rtl.hpp"
 #include "inbv/inbv.hpp"
+#include "hal/kdcom.hpp"
 
 VOLATILE
 LIMINE_REQUEST 
@@ -53,7 +54,24 @@ namespace Ki
         }
 
         Inbv::Initialize();
-        Rtl::Print("STARTING KERNEL...");
+        Hal::Kd::Configure(SERIAL_COM1_BASE,
+                          SERIAL_BAUD_RATE_115200);
+          
+        //
+        // STUPID TUNG TUNG HACK
+        // MANUALLY CLEAR HOST CONSOLE
+        // SERIAL OUTPUT GET'S STUCK WITHIN OVMF OUTPUT
+        // I DON'T KNOW HOW TO STOP OVMF OUTPUT
+        // SO MANUALLY CLEAR CONSOLE
+        //
+        Hal::Kd::Write(SERIAL_COM1_BASE, 
+                         (PCHAR)CLEAR_HOST_TERMINAL,
+                             7);
+
+        for (INT I = 0; I < 51; I++)
+        {
+            Rtl::Print("I: %d", I);
+        }
 
         for (;;);
     } 
