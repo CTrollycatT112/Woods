@@ -90,7 +90,7 @@ EXTERN_C {
     RETURNS: ULONG64
 
     --*/
-    ULONG64 strlen(PCSTR String);
+    NODISCARD ULONG64 strlen(PCSTR String);
 
     /*++
 
@@ -103,7 +103,7 @@ EXTERN_C {
     RETURNS: ULONG64
 
     --*/
-    ULONG64 wcslen(LPCWSTR String);
+    NODISCARD ULONG64 wcslen(LPCWSTR String);
 
     /*++
 
@@ -236,6 +236,7 @@ namespace Rtl
     RETURNS: QWORD
 
     --*/
+    NODISCARD
     INLINE
     HTAPI 
     QWORD 
@@ -265,6 +266,7 @@ namespace Rtl
     RETURNS: ULONG64
 
     --*/
+    NODISCARD
     INLINE
     HTAPI
     ULONG64
@@ -285,6 +287,7 @@ namespace Rtl
     RETURNS: ULONG64
 
     --*/
+    NODISCARD
     INLINE
     HTAPI
     ULONG64

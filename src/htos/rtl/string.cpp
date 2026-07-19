@@ -13,6 +13,7 @@ ABSTRACT: Bare bones string functions so flanterm will work
 
 EXTERN_C {
 
+    NODISCARD
     ULONG64
     strlen(PCSTR String)
     {
@@ -26,6 +27,7 @@ EXTERN_C {
         return I;
     }
 
+    NODISCARD
     ULONG64
     wcslen(LPCWSTR String)
     {
