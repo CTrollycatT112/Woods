@@ -150,7 +150,6 @@ namespace Inbv
                     framebuffer->height,
                     INBV_COLOR_BLUE);
 
-
         ULONG32 DefaultBg = INBV_COLOR_BLUE;
         ULONG32 DefaultFg = INBV_COLOR_WHITE;
 

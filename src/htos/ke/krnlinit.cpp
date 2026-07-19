@@ -9,6 +9,7 @@ ABSTRACT: Kernel entry point
 --*/
 #include "htbase.hpp"
 #include "limine.h"
+#include "htversion.hpp"
 
 #include "rtl/rtl.hpp"
 #include "inbv/inbv.hpp"
@@ -56,14 +57,7 @@ namespace Ki
                     (PCHAR)CLEAR_HOST_TERMINAL,
                         7);
 
-        ASSERT(1 != 1);
-        ASSERTMSG("TESTING ASSERTIONS...", 1 != 1);
-
-        for (INT I = 0; I < 51; I++)
-        {
-            Rtl::Print("I: %d", I);
-        }
-
+        Rtl::Print("%s", OS_VERSION_STRING);
         for (;;);
     } 
 } // namespace Ki
