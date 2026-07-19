@@ -246,4 +246,36 @@ namespace Rtl
                        (PCHAR)"\r\n",
                        2);
     }
+
+    HTAPI
+    VOID
+    PrintFromArgumentList(PCWSTR Format,
+                          VA_LIST List)
+    {
+        WCHAR Buffer[512] = { 0 };
+
+        ::vsnwprintf(Buffer,
+                    const_cast<PWSTR>(Format),
+                    List);
+
+        CHAR AnsiBuffer[512] = { 0 };
+        UINT Length          = 0;
+
+        while (Buffer[Length] != L'\0' && Length < 511)
+        {
+            AnsiBuffer[Length] = static_cast<CHAR>(Buffer[Length]);
+            Length++;
+        }
+        AnsiBuffer[Length] = '\0';
+
+        Inbv::WriteString(AnsiBuffer);
+        Inbv::WriteString("\r\n");
+
+        Hal::Kd::Write(SERIAL_COM1_BASE,
+                       AnsiBuffer,
+                       Length);
+        Hal::Kd::Write(SERIAL_COM1_BASE,
+                       (PCHAR)"\r\n",
+                       2);
+    }
 } // namespace Rtl

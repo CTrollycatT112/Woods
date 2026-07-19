@@ -58,6 +58,7 @@ namespace Ki
                         7);
 
         Rtl::Print("%s", OS_VERSION_STRING);
+
         for (;;);
     } 
 } // namespace Ki

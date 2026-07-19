@@ -573,6 +573,11 @@ namespace Rtl
     VOID
     PrintFromArgumentList(PCSTR Format,
                           VA_LIST List);
+
+    HTAPI
+    VOID
+    PrintFromArgumentList(PCWSTR Format,
+                          VA_LIST List);
     
     /*++
 
@@ -590,6 +595,19 @@ namespace Rtl
     HTAPI
     VOID
     Print(PCSTR Format,
+          ...)
+    {
+        VA_LIST ArgumentList;
+        __builtin_va_start(ArgumentList, Format);
+        PrintFromArgumentList(Format,
+                            ArgumentList);
+        __builtin_va_end(ArgumentList);
+    }
+
+    INLINE
+    HTAPI
+    VOID
+    Print(PCWSTR Format,
           ...)
     {
         VA_LIST ArgumentList;
@@ -619,6 +637,13 @@ namespace Rtl
                  PCSTR File,
                  ULONG Line,
                  PCSTR Message = NULL);
+
+    HTAPI
+    VOID
+    AssertFailed(PCSTR Expression,
+                 PCSTR File,
+                 ULONG Line,
+                 PCWSTR Message);
 } // namespace Rtl
 
 //

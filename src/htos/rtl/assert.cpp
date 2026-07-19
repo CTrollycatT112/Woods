@@ -31,4 +31,24 @@ namespace Rtl
             __asm__ volatile("cli; hlt");
         }
     }
+
+    HTAPI
+    VOID
+    AssertFailed(PCSTR Expression,
+                 PCSTR File,
+                 ULONG Line,
+                 PCWSTR Message)
+    {
+        Print("*** ASSERTION FAILED: %s", Expression);
+        Print("*** FILE: %s, LINE: %u", File, Line);
+
+        if (Message != NULL)
+        {
+            Print(L"*** MESSAGE: %S", Message);
+        }
+        while (1)
+        {
+            __asm__ volatile("cli; hlt");
+        }
+    }
 } // namespace Rtl

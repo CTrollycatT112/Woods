@@ -63,7 +63,7 @@ typedef const PSTR *PCZPSTR;
 typedef const CHAR *LPCSTR, *PCSTR;
 typedef PCSTR *PZPCSTR;
 
-typedef char16_t WCHAR;
+typedef wchar_t WCHAR;
 typedef WCHAR *PWCHAR, *LPWCH, *PWCH;
 typedef const WCHAR *LPCWCH, *PCWCH;
 typedef WCHAR *NWPSTR, *LPWSTR, *PWSTR;
