@@ -1,5 +1,3 @@
-// Copyright (c) 2026 Hobby Technologies
-
 /*++
 
 MODULE: Runtime library
@@ -13,8 +11,6 @@ ABSTRACT: Standard library functions and RTL wrappers
 
 #include "htbase.hpp"
 
-#include "inbv/inbv.hpp"
-#include "hal/kdcom.hpp"
 
 //
 // Converts (c) to uppercase 
@@ -573,32 +569,10 @@ namespace Rtl
     RETURNS: VOID
 
     --*/
-    INLINE
     HTAPI
     VOID
     PrintFromArgumentList(PCSTR Format,
-                          VA_LIST List)
-    {
-        CHAR Buffer[512] = { 0 };
-
-        ::vsnprintf(Buffer, Format, List);
-
-        Inbv::WriteString(Buffer);
-        Inbv::WriteString("\r\n");
-
-        UINT Length = 0;
-        while (Buffer[Length] != '\0' && Length < 512)
-        {
-            Length++;
-        }
-
-        Hal::Kd::Write(SERIAL_COM1_BASE,
-                       Buffer,
-                       Length);
-        Hal::Kd::Write(SERIAL_COM1_BASE,
-                       (PCHAR)"\r\n",
-                       2);
-    }
+                          VA_LIST List);
     
     /*++
 
@@ -624,4 +598,38 @@ namespace Rtl
                             ArgumentList);
         __builtin_va_end(ArgumentList);
     }
+
+    /*++
+
+    ROUTINE: AssertFailed
+
+    DESCRIPTION: Handles a failed expression
+
+    ARGUMENTS: Expression - The text of the failed condition
+               File       - File name
+               Line       - Line number
+               Message    - Text to print (optional)
+
+    RETURNS: VOID
+
+    --*/
+    HTAPI
+    VOID
+    AssertFailed(PCSTR Expression,
+                 PCSTR File,
+                 ULONG Line,
+                 PCSTR Message = NULL);
 } // namespace Rtl
+
+//
+// ASSERT() MACRO
+//
+#if defined(HTOS_CHK) && (HTOS_CHK == 1)
+#define ASSERT(exp) \
+    ((exp) ? (void)0 : Rtl::AssertFailed(#exp, __FILE__, __LINE__))
+#define ASSERTMSG(message, exp) \
+    ((exp) ? (void)0 : Rtl::AssertFailed(#exp, __FILE__, __LINE__, message))
+#else
+#define ASSERT(exp) ((void)0)
+#define ASSERTMSG(message, exp) ((void)0)
+#endif

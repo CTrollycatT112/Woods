@@ -2,8 +2,6 @@
 
 // ---------------
 
-// Copyright (c) 2026 Hobby Technologies
-
 /*++
 
 MODULE:

@@ -1,5 +1,3 @@
-// Copyright (c) 2026 Hobby Technologies
-
 /*++
 
 MODULE: Kernel initialization
@@ -48,25 +46,18 @@ namespace Ki
     CODESEG(".text.startup")
     VOID SystemStartup()
     {
-        if (LIMINE_BASE_REVISION_SUPPORTED(BaseRevision) == FALSE)
-        {
-            for (;;);
-        }
+        ASSERT(LIMINE_BASE_REVISION_SUPPORTED(BaseRevision) == TRUE);
 
         Inbv::Initialize();
+
         Hal::Kd::Configure(SERIAL_COM1_BASE,
                           SERIAL_BAUD_RATE_115200);
-          
-        //
-        // STUPID TUNG TUNG HACK
-        // MANUALLY CLEAR HOST CONSOLE
-        // SERIAL OUTPUT GET'S STUCK WITHIN OVMF OUTPUT
-        // I DON'T KNOW HOW TO STOP OVMF OUTPUT
-        // SO MANUALLY CLEAR CONSOLE
-        //
         Hal::Kd::Write(SERIAL_COM1_BASE, 
-                         (PCHAR)CLEAR_HOST_TERMINAL,
-                             7);
+                    (PCHAR)CLEAR_HOST_TERMINAL,
+                        7);
+
+        ASSERT(1 != 1);
+        ASSERTMSG("TESTING ASSERTIONS...", 1 != 1);
 
         for (INT I = 0; I < 51; I++)
         {

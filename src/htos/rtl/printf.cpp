@@ -1,5 +1,3 @@
-// Copyright (c) 2026 Hobby Technologies
-
 /*++
 
 MODULE: Print utils
@@ -9,10 +7,10 @@ AUTHOR: Trollycat
 ABSTRACT: Print and formatting functions
 
 --*/
-#include "htbase.hpp"
 #include "rtl/rtl.hpp"
 
-#include <limits.h>
+#include "inbv/inbv.hpp"
+#include "hal/kdcom.hpp"
 
 EXTERN_C {
     VOID vsnwprintf(PWSTR Buffer,
@@ -219,4 +217,33 @@ EXTERN_C {
         Buffer[Index] = '\0';
 
     }
-};
+}
+
+namespace Rtl
+{
+    HTAPI
+    VOID
+    PrintFromArgumentList(PCSTR Format,
+                          VA_LIST List)
+    {
+        CHAR Buffer[512] = { 0 };
+
+        ::vsnprintf(Buffer, Format, List);
+
+        Inbv::WriteString(Buffer);
+        Inbv::WriteString("\r\n");
+
+        UINT Length = 0;
+        while (Buffer[Length] != '\0' && Length < 512)
+        {
+            Length++;
+        }
+
+        Hal::Kd::Write(SERIAL_COM1_BASE,
+                       Buffer,
+                       Length);
+        Hal::Kd::Write(SERIAL_COM1_BASE,
+                       (PCHAR)"\r\n",
+                       2);
+    }
+} // namespace Rtl

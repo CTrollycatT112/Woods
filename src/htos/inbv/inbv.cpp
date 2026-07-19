@@ -1,5 +1,3 @@
-// Copyright (c) 2026 Hobby Technologies
-
 /*++
 
 MODULE: Initial Boot Video
@@ -138,11 +136,8 @@ namespace Inbv
     VOID
     Initialize()
     {
-        if (framebuffer_request.response == NULL ||
-            framebuffer_request.response->framebuffer_count < 1)
-        {
-            for (;;);
-        }
+        ASSERT(framebuffer_request.response != NULL && 
+               framebuffer_request.response->framebuffer_count >= 1);
 
         framebuffer = framebuffer_request.response->framebuffers[0];
 
