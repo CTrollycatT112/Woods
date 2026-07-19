@@ -12,6 +12,7 @@ ABSTRACT: Kernel entry point
 #include "htbase.hpp"
 #include "limine.h"
 
+#include "rtl/rtl.hpp"
 #include "inbv/inbv.hpp"
 
 VOLATILE
@@ -52,7 +53,7 @@ namespace Ki
         }
 
         Inbv::Initialize();
-        Inbv::WriteString("GDT init... Ok\r\n");
+        Rtl::Print("STARTING KERNEL...");
 
         for (;;);
     } 

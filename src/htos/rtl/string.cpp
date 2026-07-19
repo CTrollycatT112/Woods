@@ -25,4 +25,15 @@ EXTERN_C {
 
         return I;
     }
+
+    ULONG64
+    wcslen(LPCWSTR String)
+    {
+        ULONG64 I = 0;
+
+        while (String[I])
+            I++;
+        
+        return I;
+    }
 }

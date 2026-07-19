@@ -94,6 +94,21 @@ namespace Inbv
     
     /*++
 
+    ROUTINE: WriteChar
+
+    DESCRIPTION: Print a single character to the screen
+
+    ARGUMENTS: Character - Character to print..
+
+    RETURNS: VOID
+
+    --*/
+    HTAPI
+    VOID
+    WriteChar(CHAR Character);
+    
+    /*++
+
     ROUTINE: WriteString
 
     DESCRIPTION: Print a string to the screen (usually white text)

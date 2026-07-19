@@ -122,3 +122,5 @@ typedef struct PACKED _LIST_ENTRY
 #define MAXWORD     UINT16_MAX
 #define MAXDWORD    UINT32_MAX
 #define MAXLONGLONG INT64_MAX
+
+typedef __builtin_va_list VA_LIST;

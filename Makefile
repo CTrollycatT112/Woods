@@ -18,6 +18,7 @@ DRIVERSPATH := $(SYSTEM32PATH)/drivers
 
 LIMINEPATH := $(ROOTPATH)/vendor/limine
 FLANTERMPATH := $(ROOTPATH)/vendor/flanterm
+PRINTFPATH := $(ROOTPATH)/vendor/printf
 INCPATH := $(ROOTPATH)/src/inc
 SCRIPTSPATH := $(ROOTPATH)/tools/scripts
 
@@ -55,7 +56,10 @@ FLANTERM_CORE_OBJ := $(OBJPATH)/flanterm/flanterm.o
 FLANTERM_FB_OBJ := $(OBJPATH)/flanterm/backends/fb.o
 FLANTERMOBJS := $(FLANTERM_CORE_OBJ) $(FLANTERM_FB_OBJ)
 
-OBJS := $(CPPOBJS) $(ASMOBJS) $(FLANTERMOBJS)
+OBJS := $(CPPOBJS)
+OBJS += $(ASMOBJS)
+OBJS += $(FLANTERMOBJS)
+
 DEPS := $(OBJS:.o=.d)
 
 CXXSTD := -std=c++23
@@ -63,9 +67,11 @@ CXXSTD := -std=c++23
 COMMONFLAGS := -ffreestanding -fno-builtin -fno-stack-protector -fno-stack-check \
     -fno-lto -fno-pic -fno-pie -m64 -march=x86-64 \
     -mno-80387 -mno-mmx -mno-3dnow -mno-sse -mno-sse2 \
-    -mno-red-zone -mgeneral-regs-only -mcmodel=kernel
+    -mno-red-zone -mgeneral-regs-only -mcmodel=kernel \
 
-CFLAGS := $(COMMONFLAGS) -Wall -Wextra -Werror -I$(FLANTERMPATH)/src -MMD -MP
+
+CFLAGS := $(COMMONFLAGS) -Wall -Wextra -Werror \
+    -I$(FLANTERMPATH)/src -MMD -MP
 
 CXXFLAGS := $(CXXSTD) $(COMMONFLAGS) -Wall -Wextra -Werror \
     -fno-exceptions -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables \
@@ -100,7 +106,6 @@ dirs:
 	@mkdir -p $(OBJPATH)
 	@mkdir -p $(SYSTEM32PATH)
 	@mkdir -p $(DRIVERSPATH)
-
 
 $(NTOSKRNLPATH): dirs $(OBJS)
 	@$(call LOGLD,$(NTOSKRNLNAME))
