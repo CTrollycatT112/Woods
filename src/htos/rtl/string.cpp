@@ -14,7 +14,7 @@ ABSTRACT: Bare bones string functions so flanterm will work
 EXTERN_C {
 
     ULONG64
-    strlen(CONST CHAR* String)
+    strlen(PCSTR String)
     {
         ULONG64 I = 0;
 
