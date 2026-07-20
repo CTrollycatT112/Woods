@@ -358,7 +358,7 @@ namespace Rtl
         Ptr = Buffer;
 
         do {
-            *Ptr++ = L"0123456789abcdefghijklmnopqrstuvwxyz"[Value % Base];
+            *Ptr++ = BASE36_ALPHABET[Value % Base];
             Value /= Base;
             NumberOfDigits++;
         } while (Value);
@@ -488,7 +488,7 @@ namespace Rtl
         Ptr = Buffer;
 
         do {
-            *Ptr++ = "0123456789abcdefghijklmnopqrstuvwxyz"[Value % Base];
+            *Ptr++ = BASE36_ALPHABET[Value % Base];
             Value /= Base;
             NumberOfDigits++;
         } while (Value);

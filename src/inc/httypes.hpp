@@ -34,6 +34,7 @@ typedef uint8_t   BYTE,  *PBYTE;
 typedef uint16_t  WORD,  *PWORD;
 typedef uint32_t  DWORD, *PDWORD;
 typedef uint64_t  QWORD, *PQWORD;
+typedef const uint64_t*  PCQWORD;
 
 typedef size_t    SIZE_T,  *PSIZE_T;
 typedef __PTRDIFF_TYPE__    SSIZE_T, *PSSIZE_T;
@@ -62,6 +63,8 @@ typedef PSTR *PZPSTR;
 typedef const PSTR *PCZPSTR;
 typedef const CHAR *LPCSTR, *PCSTR;
 typedef PCSTR *PZPCSTR;
+
+typedef const uint8_t* PCBYTE;
 
 typedef wchar_t WCHAR;
 typedef WCHAR *PWCHAR, *LPWCH, *PWCH;

@@ -125,6 +125,8 @@ ABSTRACT: Defines macro's used across the project (like NODISCARD)
 #define RTL_BITS_OF_FIELD(type, field) (RTL_BITS_OF(RTL_FIELD_TYPE(type, field)))
 #define RTL_FIELD_SIZE(type, field) (sizeof(((type *)0)->field))
 
+#define BASE36_ALPHABET L"0123456789abcdefghijklmnopqrstuvwxyz"
+
 #define RTL_SIZEOF_THROUGH_FIELD(type, field) \
     (FIELD_OFFSET(type, field) + OFFSETOF(type, field))
 
@@ -132,5 +134,8 @@ ABSTRACT: Defines macro's used across the project (like NODISCARD)
     ( (((PCHAR)(&(Struct)->Field)) + sizeof((Struct)->Field)) <= (((PCHAR)(Struct))+(Size)) )
 
 #define RTL_NUMBER_OF_V1(A) (sizeof(A)/sizeof((A)[0]))
+
+#define ALIGNOFF(P, Boundary)   ((ULONG_PTR)(P) & ((Boundary) - 1))
+#define IS_ALIGNED(P, Boundary) (ALIGNOFF(P, Boundary) == 0)
 
 #define UNREACHABLE __builtin_unreachable()
