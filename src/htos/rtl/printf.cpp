@@ -266,6 +266,7 @@ namespace Rtl
             AnsiBuffer[Length] = static_cast<CHAR>(Buffer[Length]);
             Length++;
         }
+        
         AnsiBuffer[Length] = '\0';
 
         Inbv::WriteString(AnsiBuffer);

@@ -11,6 +11,8 @@ ABSTRACT: Kernel entry point
 #include "limine.h"
 #include "htversion.hpp"
 
+#include "ke/amd64/amd64.hpp"
+
 #include "rtl/rtl.hpp"
 #include "inbv/inbv.hpp"
 #include "hal/kdcom.hpp"
@@ -49,6 +51,8 @@ namespace Ki
     {
         ASSERT(LIMINE_BASE_REVISION_SUPPORTED(BaseRevision) == TRUE);
 
+        Ki::InitializeGdt();
+
         Inbv::Initialize();
 
         Hal::Kd::Configure(SERIAL_COM1_BASE,
@@ -58,7 +62,8 @@ namespace Ki
                         7);
 
         Rtl::Print("%s", OS_VERSION_STRING);
-
+        Rtl::Print("GDT Init... OK");
+        
         for (;;);
     } 
 } // namespace Ki
