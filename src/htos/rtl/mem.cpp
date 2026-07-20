@@ -30,42 +30,7 @@ EXTERN_C {
            PCVOID Src,
            QWORD Count)
     {
-        if (Count >= 512)
-        {
-            PVOID Temp = Dest;
-            __asm__ volatile( "rep movsb" : "+D"(Dest), "+S"(Src), "+c"(Count) : : "memory");
-            return Temp;
-        }
-
-        PBYTE  PDest = (PBYTE)Dest;
-        PCBYTE PSrc  = (PCBYTE)Src;
-
-        if (ALIGNOFF(PDest, sizeof(QWORD)) == ALIGNOFF(PSrc, sizeof(QWORD)))
-        {
-            while (!IS_ALIGNED(PDest, sizeof(QWORD)) && Count > 0)
-            {
-                *PDest++ = *PSrc++;
-                Count--;
-            }
-
-            PQWORD  WDest = (PQWORD)PDest;
-            PCQWORD WSrc  = (PCQWORD)PSrc;
-
-            while (Count >= sizeof(QWORD))
-            {
-                *WDest++ = *WSrc++;
-                Count -= sizeof(QWORD);
-            }
-
-            PDest = (PBYTE)WDest;
-            PSrc  = (PCBYTE)WSrc;
-        }
-
-        for (QWORD I = 0; I < Count; I++)
-        {
-            PDest[I] = PSrc[I];
-        }
-
+        __asm__ volatile("rep movsb" : "+D"(Dest), "+S"(Src), "+c"(Count) : : "memory");
         return Dest;
     }
 
