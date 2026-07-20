@@ -9,8 +9,11 @@ ABSTRACT: AMD64 Specific Code
 --*/
 #include "ke/amd64/amd64.hpp"
 
+#include "rtl/rtl.hpp"
+
 STATIC KDESCRIPTOR_TABLE     DescriptorTable;
 STATIC KDESCRIPTOR_TABLE_PTR DescriptorTablePtr;
+STATIC KTASK_STATE           TaskState;
 
 namespace Ki
 {
@@ -59,13 +62,46 @@ namespace Ki
         //
         // TSS
         //
-        DescriptorTable.Tss.Length = sizeof(KTASK_DESCRIPTOR_TABLE_DESCRIPTOR);
-        DescriptorTable.Tss.Flags0 = (TSS_FLAGS0_PRESENT | SEGMENT_TYPE_TSS);
+        union
+        {
+            ULONG64 Address;
+            struct
+            {
+                USHORT Low;
+                UCHAR  Mid;
+                UCHAR  High;
+                ULONG  Upper32;
+            } Parts;
+        } TssSplit;
 
+        Rtl::ZeroMemory(&TaskState,
+                        sizeof(KTASK_STATE));
+        TaskState.IopbOffset = sizeof(KTASK_STATE);
+
+        ULONG64 TssBase = (ULONG64)&TaskState;
+
+        DescriptorTable.Tss.Length      = (USHORT)(sizeof(KTASK_STATE) - 1);
+        DescriptorTable.Tss.Flags0      = (TSS_FLAGS0_PRESENT | SEGMENT_TYPE_TSS);
+        DescriptorTable.Tss.Flags1      = 0;
+
+        TssSplit.Address = TssBase;
+
+        DescriptorTable.Tss.BaseLow     = TssSplit.Parts.Low;
+        DescriptorTable.Tss.BaseMid     = TssSplit.Parts.Mid;
+        DescriptorTable.Tss.BaseHigh    = TssSplit.Parts.High;
+        DescriptorTable.Tss.BaseUpper32 = TssSplit.Parts.Upper32;
+        DescriptorTable.Tss.Reserved    = 0;
+
+        //
+        // LOAD AND FLUSH
+        //
         DescriptorTablePtr.Limit = sizeof(KDESCRIPTOR_TABLE) - 1;
         DescriptorTablePtr.Base  = (ULONG64)&DescriptorTable;
 
         Ke386Lgdt(&DescriptorTablePtr);
         KiFlushGdt();
+
+        Ke386SetTr(OFFSETOF(KDESCRIPTOR_TABLE, Tss));
+
     }
 } // namespace Ki

@@ -95,9 +95,12 @@ typedef struct PACKED _KTASK_DESCRIPTOR_TABLE_DESCRIPTOR {
 
 typedef struct PACKED _KTASK_STATE
 {
-    ULONG32 Reserved1;
-    ULONG64 Rsp[3];
-    ULONG64 Ist[8];
+    ULONG32 Reserved0;
+    ULONG64 Rsp0;
+    ULONG64 Rsp1;
+    ULONG64 Rsp2;
+    ULONG64 Reserved1;
+    ULONG64 Ist[7];
     ULONG64 Reserved2;
     USHORT  Reserved3;
     USHORT  IopbOffset;
