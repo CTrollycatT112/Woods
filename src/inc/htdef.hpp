@@ -135,6 +135,9 @@ ABSTRACT: Defines macro's used across the project (like NODISCARD)
 
 #define RTL_NUMBER_OF_V1(A) (sizeof(A)/sizeof((A)[0]))
 
+#define MAKE_TAG(c1, c2, c3, c4) \
+    (((ULONG)(c4) << 24) | ((ULONG)(c3) << 16) | ((ULONG)(c2) << 8) | (ULONG)(c1))
+
 #define ALIGNOFF(P, Boundary)   ((ULONG_PTR)(P) & ((Boundary) - 1))
 #define IS_ALIGNED(P, Boundary) (ALIGNOFF(P, Boundary) == 0)
 

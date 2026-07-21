@@ -112,18 +112,19 @@ typedef struct PACKED _KDPC
     LIST_ENTRY         DpcQueue;
 } KDPC, *PKDPC;
 
-typedef struct PACKED _KPRCB
+typedef struct _KPRCB
 {
     PVOID       Self;
     LIST_ENTRY  DpcQueueHead;
+    KSPIN_LOCK  DpcLock;
     ULONG64     DpcQueueDepth;
-    BOOLEAN     DpcInterruptRequested;
     ULONG64     InterruptCount;
+    ULONG64     ProcessorId;
+    ULONG64     LocalApicId;
 
-    ULONG64 ProcessorId;
-    ULONG64 LocalApicId;
-    
-    ULONG ProcessorNumber;
+    ULONG       ProcessorNumber;
+    BOOLEAN     DpcInterruptRequested;
+    UCHAR       Padding[3];
     
     struct
     {

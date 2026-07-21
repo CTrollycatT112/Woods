@@ -11,11 +11,13 @@ ABSTRACT: Hardware interrupt routing
 #include "hal/ioport.hpp"
 
 #include "ke/amd64/amd64.hpp"
+#include "ke/bug.hpp"
 #include "ke/processor.hpp"
 
 #include "rtl/rtl.hpp"
 
 #include "limine.h"
+#include "bugcodes.hpp"
 
 STATIC PMADT HalMadt = NULL;
 
@@ -45,7 +47,14 @@ namespace Hal
     {
         HalMadt = reinterpret_cast<PMADT>(AcpiFindSdt("APIC"));
 
-        ASSERTMSG("APIC: FAILED TO LOAD HALMADT", HalMadt != NULL);
+        if (HalMadt == NULL)
+        {
+            Ke::BugCheckEx(HAL_INITIALIZATION_FAILED,
+                            MAKE_TAG('C', 'I', 'P', 'A'),
+                            0x0,
+                            (ULONG64)HalMadt,
+                            0x0);
+        }
 
         for (ULONG64 MadtPtr = (ULONG64)&HalMadt->Entry0; MadtPtr < (ULONG64)(HalMadt)+HalMadt->Header.Length; MadtPtr += ((PMADT_HEADER)MadtPtr)->RecordLength)
         {

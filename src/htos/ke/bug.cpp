@@ -10,6 +10,7 @@ ABSTRACT: BugCheck/Panic System, the operating system cannot recover
 #include "htdef.hpp"
 #include "bugcodes.hpp"
 
+#include "ke/spinlock.hpp"
 #include "rtl/rtl.hpp"
 
 #include "ke/bug.hpp"
@@ -17,6 +18,8 @@ ABSTRACT: BugCheck/Panic System, the operating system cannot recover
 #include "ke/processor.hpp"
 
 #include "inbv/inbv.hpp"
+
+KSPIN_LOCK KiBugCheckLock = { 0 };
 
 namespace Ke
 {
@@ -32,6 +35,8 @@ namespace Ke
                    PKTRAP_FRAME TrapFrame)
     {
         __asm__ volatile("cli");
+
+        Ke::AcquireSpinLockAtDpcLevel(&KiBugCheckLock);
 
         PULONG64 Rip = (PULONG64)__builtin_return_address(0);
         PULONG64 Rsp = (PULONG64)(ULONG64)__builtin_frame_address(0);

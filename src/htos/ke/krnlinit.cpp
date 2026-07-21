@@ -9,6 +9,7 @@ ABSTRACT: Kernel entry point
 --*/
 #include "hal/hal.hpp"
 #include "htbase.hpp"
+#include "ke/irql.hpp"
 #include "limine.h"
 #include "htversion.hpp"
 
@@ -114,6 +115,11 @@ namespace Ki
 
         Rtl::Print("    ");
 
-        for (;;);
+        Ke::LowerIrql(PASSIVE_LEVEL);
+
+        while (TRUE)
+        {
+            __asm__ volatile("hlt");
+        }
     } 
 } // namespace Ki

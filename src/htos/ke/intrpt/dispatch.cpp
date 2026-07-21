@@ -10,6 +10,7 @@ ABSTRACT: Dispatcher module that handles interrupts, and DPC
 #include "htbase.hpp"
 #include "bugcodes.hpp"
 
+#include "httypes.hpp"
 #include "ke/amd64/amd64.hpp"
 #include "ke/bug.hpp"
 #include "ke/irql.hpp"
@@ -17,7 +18,10 @@ ABSTRACT: Dispatcher module that handles interrupts, and DPC
 #include "ke/dpcqueue.hpp"
 #include "ke/intrdispatch.hpp"
 
+#include "ke/spinlock.hpp"
 #include "rtl/rtl.hpp"
+
+KSPIN_LOCK KiDispatcherLock = { 1 };
 
 namespace Ki
 {
@@ -47,38 +51,6 @@ namespace Ki
             "c"(0xC0000101)
         );
     }
-    
-    VOID
-    ProcessDpcQueue()
-    {
-        KIRQL PreviousIrql = 0;
-        Ke::RaiseIrql(DISPATCH_LEVEL,&PreviousIrql);
-
-        PKPRCB Processor = Ke::QueryCurrentProcessor();
-        
-        while (!KeEmptyList(&Processor->DpcQueueHead))
-        {
-            PLIST_ENTRY Entry = KeRemoveHeadList(&Processor->DpcQueueHead);
-            PKDPC Dpc         = CONTAINING_RECORD(Entry,KDPC,DpcQueue);
-
-            if (Processor->DpcQueueDepth > 0 )
-            {
-                Processor->DpcQueueDepth--;
-            }
-
-            if (!Dpc->Completed)
-            {
-                Dpc->Completed = TRUE;
-                if (Dpc->DefferedRoutine != NULL)
-                {
-                    Dpc->DefferedRoutine(Dpc, Dpc->DefferedContext);
-                }
-            }
-        }
-
-        Processor->DpcInterruptRequested = FALSE;
-        Ke::LowerIrql(PreviousIrql);
-    }
 
     VOID
     InitializeDpc(PKDPC Dpc,
@@ -90,15 +62,61 @@ namespace Ki
         Dpc->DefferedContext = Context;
         Dpc->DefferedRoutine = Routine;
     }
+    
+    VOID
+    ProcessDpcQueue()
+    {
+        KIRQL PreviousIrql = 0;
+        Ke::RaiseIrql(DISPATCH_LEVEL,&PreviousIrql);
+
+        PKPRCB Processor = Ke::QueryCurrentProcessor();
+
+        if (KeEmptyList(&Processor->DpcQueueHead) ||
+            Ke::QuerySpinLock(&Processor->DpcLock))
+        {
+            Ke::LowerIrql(PreviousIrql);
+            return;
+        }
+
+        PLIST_ENTRY Head  = &Processor->DpcQueueHead;
+        PLIST_ENTRY Flink = Head->Flink;
+        do
+        {
+            PKDPC Dpc = CONTAINING_RECORD(Flink, KDPC, DpcQueue);
+
+            Flink = Flink->Flink;
+
+            if (!Dpc->Completed)
+            {
+                Dpc->Completed = TRUE;
+                if (Dpc->DefferedRoutine != NULL)
+                {
+                    Dpc->DefferedRoutine(Dpc, Dpc->DefferedContext);
+                }
+            }
+        } while (Flink != Head);
+
+        Processor->DpcQueueDepth            = 0;
+        Processor->DpcInterruptRequested    = FALSE;
+
+        KeInitializeHeadList(&Processor->DpcQueueHead);
+
+        Ke::LowerIrql(PreviousIrql);
+    }
 
     VOID
     InsertQueueDpc(PKDPC Dpc)
     {
-        PKPRCB Processor   = Ke::QueryCurrentProcessor();
+        PKPRCB Processor    = Ke::QueryCurrentProcessor();
+        KIRQL  PreviousIrql = 0;
+        Ke::AcquireSpinLock(&Processor->DpcLock,&PreviousIrql);
+       
         Dpc->Completed = FALSE;
 
         KeInsertTailList(&Processor->DpcQueueHead,&Dpc->DpcQueue);
         Processor->DpcQueueDepth++;
+
+        Ke::ReleaseSpinLock(&Processor->DpcLock,PreviousIrql);
     }
 
     EXTERN_C

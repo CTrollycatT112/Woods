@@ -65,3 +65,4 @@ ABSTRACT: Panic/BugCheck failure codes
 #define SYSTEM_THREAD_EXCEPTION_NOT_HANDLED             0x0000007E
 #define ACPI_BIOS_ERROR                                 0x000000A5
 #define CRITICAL_INITIALIZATION_FAILURE                 0x0000013D
+#define HAL_INITIALIZATION_FAILED                       0x0000005C

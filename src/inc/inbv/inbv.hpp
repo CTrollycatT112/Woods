@@ -53,6 +53,7 @@ EXTERN ULONG64 InbvScreenHeight;
 #define INBV_SHOW_CURSOR              "\033[?25h"
 #define INBV_CLEAR_SCREEN_HOME_CURSOR "\033[H\033[2J"
 
+
 namespace Inbv
 {
     

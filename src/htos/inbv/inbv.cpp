@@ -7,9 +7,12 @@ AUTHOR: Trollycat
 ABSTRACT: Basic GOP mode before the GUI is initialized (LARP there won't be GUI anytime soon :troll:)
 
 --*/
+#include "ke/amd64/amd64.hpp"
+
 #include "inbv/inbv.hpp"
 #include "inbv/inbvfont.hpp"
 
+#include "ke/spinlock.hpp"
 #include "rtl/rtl.hpp"
 
 #include "limine.h"
@@ -17,6 +20,9 @@ ABSTRACT: Basic GOP mode before the GUI is initialized (LARP there won't be GUI 
 #include <flanterm.h>
 #include <flanterm_backends/fb.h>
 
+//
+// LIMINE FRAMEBUFFER
+//
 VOLATILE
 LIMINE_REQUEST
 struct limine_framebuffer_request framebuffer_request = 
@@ -29,20 +35,30 @@ struct limine_framebuffer_request framebuffer_request =
 struct 
 limine_framebuffer *VOLATILE framebuffer = NULL;
 
+//
+// FLANTERM CONTEXT
+//
 STATIC
 flanterm_context* VOLATILE InbvTermContext = NULL;
 
+//
+// SCREEN PROPERTIES
+//
 ULONG64 InbvScreenWidth  = 0;
 ULONG64 InbvScreenHeight = 0;
+
+//
+// Spinlock
+//
+KSPIN_LOCK InbvLock = { 0 };
 
 // PROBLEM:
 // WE DON'T HAVE MEMORY ALLOCATORS YET
 // THIS IS A TERRIBLE HACK BUT HERE I USE A STATIC POOL...
 // CHANGE THIS AS SOON AS POSSIBLE
 // TODO: DON'T DO THIS LOL
-
-static BYTE FlantermPool[1024 * 1024];
-static QWORD FlantermPoolIndex = 0;
+STATIC BYTE  FlantermPool[1024 * 1024];
+STATIC QWORD FlantermPoolIndex = 0;
 
 PVOID
 FlantermAllocate(QWORD Size)
@@ -124,6 +140,9 @@ namespace Inbv
             return;
         }
 
+        KIRQL PreviousIrql = 0;
+        Ke::AcquireSpinLock(&InbvLock,&PreviousIrql);
+
         for (ULONG Y = Top; Y < Bottom; Y++)
         {
             for (ULONG X = Left; X < Right; X++)
@@ -131,6 +150,8 @@ namespace Inbv
                 PlotPixel(Color, X, Y);
             }
         }
+
+        Ke::ReleaseSpinLock(&InbvLock, PreviousIrql);
     }
 
     VOID
@@ -212,7 +233,12 @@ namespace Inbv
             return;
         }
 
+        KIRQL PreviousIrql = 0;
+        Ke::AcquireSpinLock(&InbvLock,&PreviousIrql);
+        
         flanterm_write(InbvTermContext, &Character, 1);
+    
+        Ke::ReleaseSpinLock(&InbvLock, PreviousIrql);
     }
 
     VOID
@@ -223,7 +249,12 @@ namespace Inbv
             return;
         }
 
+        KIRQL PreviousIrql = 0;
+        Ke::AcquireSpinLock(&InbvLock,&PreviousIrql);
+        
         flanterm_write(InbvTermContext, String, Rtl::AnsiStringLength(String));
+    
+        Ke::ReleaseSpinLock(&InbvLock, PreviousIrql);
     }
 
     VOID
