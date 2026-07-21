@@ -578,6 +578,11 @@ namespace Rtl
     VOID
     PrintFromArgumentList(PCWSTR Format,
                           VA_LIST List);
+
+    HTAPI
+    VOID
+    KdPrintFromArgumentList(PCWSTR Format,
+                            VA_LIST List);
     
     /*++
 
@@ -614,6 +619,19 @@ namespace Rtl
         __builtin_va_start(ArgumentList, Format);
         PrintFromArgumentList(Format,
                             ArgumentList);
+        __builtin_va_end(ArgumentList);
+    }
+
+    INLINE
+    HTAPI
+    VOID
+    KdPrint(PCWSTR Format,
+            ...)
+    {
+        VA_LIST ArgumentList;
+        __builtin_va_start(ArgumentList, Format);
+        KdPrintFromArgumentList(Format,
+                                ArgumentList);
         __builtin_va_end(ArgumentList);
     }
 

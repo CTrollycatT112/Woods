@@ -247,13 +247,6 @@ namespace Rtl
         {
             Length++;
         }
-
-        Hal::Kd::Write(SERIAL_COM1_BASE,
-                       Buffer,
-                       Length);
-        Hal::Kd::Write(SERIAL_COM1_BASE,
-                       (PCHAR)"\r\n",
-                       2);
     }
 
     HTAPI
@@ -280,6 +273,29 @@ namespace Rtl
 
         Inbv::WriteString(AnsiBuffer);
         Inbv::WriteString("\r\n");
+    }
+
+    HTAPI
+    VOID
+    KdPrintFromArgumentList(PCWSTR Format,
+                            VA_LIST List)
+    {
+        WCHAR Buffer[512] = {  0 };
+
+        ::vsnwprintf(Buffer,
+                     const_cast<PWSTR>(Format),
+                     List);
+
+        CHAR AnsiBuffer[512] = {  0 };
+        UINT Length          = 0;
+
+        while (Buffer[Length] != L'\0' && Length < 511)
+        {
+            AnsiBuffer[Length] = static_cast<CHAR>(Buffer[Length]);
+            Length++;
+        }
+
+        AnsiBuffer[Length] = '\0';
 
         Hal::Kd::Write(SERIAL_COM1_BASE,
                        AnsiBuffer,

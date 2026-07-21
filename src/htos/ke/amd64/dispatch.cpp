@@ -7,22 +7,33 @@ AUTHOR: Trollycat
 ABSTRACT: Handles dispatching any interrupts (Or even DPC)
 
 --*/
-#include "htdef.hpp"
+#include "htbase.hpp"
+#include "bugcodes.hpp"
+
 #include "ke/amd64/amd64.hpp"
 
+#include "ke/bug.hpp"
 #include "rtl/rtl.hpp"
+
 
 namespace Ki
 {
     VOID
     InitializePrcb(PKPRCB Processor)
     {
+        Processor->Self = Processor;
         Processor->DpcQueueHead.Flink = &Processor->DpcQueueHead;
         Processor->DpcQueueHead.Blink = &Processor->DpcQueueHead;
         
-        Processor->DpcQueueDepth = 0;
+        Processor->DpcQueueDepth         = 0;
         Processor->DpcInterruptRequested = FALSE;
-        Processor->Self = Processor;
+        Processor->InterruptCount        = 0;
+
+        Processor->ProcessorId = 0;
+        Processor->LocalApicId = 0;
+
+        Processor->ProcessorNumber  = 0;
+        Processor->TaskState.Rsp[0] = 0;
 
         ULONG64 Base = reinterpret_cast<ULONG64>(Processor);
         __asm__ volatile(
@@ -33,6 +44,7 @@ namespace Ki
             "c"(0xC0000101)
         );
     }
+    
     VOID
     ProcessDpcQueue()
     {
@@ -77,17 +89,25 @@ namespace Ki
     VOID
     DispatchException(PKTRAP_FRAME TrapFrame)
     {
-        Rtl::Print("UNHANDLED EXCEPTION VECTOR: %llu ERROR: %llu RIP: %llx CR2: %llx",
-                TrapFrame->Interrupt, TrapFrame->Error, TrapFrame->Rip);
+        ULONG64 Cr2Value   = 0;
+        ULONG BugCheckCode = KMODE_EXCEPTION_NOT_HANDLED;
 
-        ULONG64 Cr2;
-        __asm__ volatile("mov %%cr2, %0" : "=r"(Cr2));
-        Rtl::Print("FAULT ADDRESS: %llx", Cr2);
-
-        for (;;)
+        if (TrapFrame->Interrupt == 0x03)
         {
-            __asm__ volatile("cli; hlt");
+            BugCheckCode = KMODE_EXCEPTION_NOT_HANDLED;
         }
+        else if (TrapFrame->Interrupt == 0x0E)
+        {
+            __asm__ volatile("mov %%cr2, %0" : "=r"(Cr2Value));
+            BugCheckCode = PAGE_FAULT_IN_NONPAGED_AREA;
+        }
+
+        Ke::BugCheckWithIf(BugCheckCode,
+                           TrapFrame->Interrupt,
+                            TrapFrame->Error,
+                            TrapFrame->Rip,
+                        Cr2Value,
+                                            TrapFrame);
     }
 } // namespace Ki
 

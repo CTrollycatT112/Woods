@@ -7,7 +7,10 @@ AUTHOR: Trollycat
 ABSTRACT: Runtime library assertion failure
 
 --*/
+#include "ke/bug.hpp"
 #include "rtl/rtl.hpp"
+
+#include "bugcodes.hpp"
 
 namespace Rtl
 {
@@ -18,18 +21,11 @@ namespace Rtl
                  ULONG Line,
                  PCSTR Message)
     {
-        Print("*** ASSERTION FAILED: %s", Expression);
-        Print("*** FILE: %s, LINE: %u", File, Line);
-
-        if (Message != NULL)
-        {
-            Print("*** MESSAGE: %s", Message);
-        }
-
-        while (1)
-        {
-            __asm__ volatile("cli; hlt");
-        }
+        Ke::BugCheckEx(KMODE_EXCEPTION_NOT_HANDLED, 
+                       reinterpret_cast<ULONG64>(Expression), 
+                       reinterpret_cast<ULONG64>(File), 
+                       Line, 
+                       reinterpret_cast<ULONG64>(Message));
     }
 
     HTAPI
@@ -39,16 +35,10 @@ namespace Rtl
                  ULONG Line,
                  PCWSTR Message)
     {
-        Print("*** ASSERTION FAILED: %s", Expression);
-        Print("*** FILE: %s, LINE: %u", File, Line);
-
-        if (Message != NULL)
-        {
-            Print(L"*** MESSAGE: %S", Message);
-        }
-        while (1)
-        {
-            __asm__ volatile("cli; hlt");
-        }
+        Ke::BugCheckEx(KMODE_EXCEPTION_NOT_HANDLED, 
+                       reinterpret_cast<ULONG64>(Expression), 
+                       reinterpret_cast<ULONG64>(File), 
+                       Line, 
+                       reinterpret_cast<ULONG64>(Message));
     }
 } // namespace Rtl

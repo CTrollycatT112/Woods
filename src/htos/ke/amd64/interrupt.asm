@@ -75,8 +75,8 @@ EXTERN Eoi
     pop     rax
     mov     cr3, rax
 
-    pop     rax ; Don't restore the GS and FS
-    pop     rax ; We will set it in another way
+    pop     rax
+    pop     rax
 
     pop     rax
     mov     es, rax
@@ -103,7 +103,7 @@ EXTERN Eoi
 ALIGN 16
 KxExceptionInterrupt:
     PUSH_ALL
-    mov rdi, rsp        ; was: mov rcx, rsp
+    mov rdi, rsp
     sub rsp, 0x28
     call DispatchException
     add rsp, 0x28
@@ -114,7 +114,7 @@ KxExceptionInterrupt:
 ALIGN 16
 KxHardwareInterrupt:
     PUSH_ALL
-    mov rdi, rsp        ; was: mov rcx, rsp
+    mov rdi, rsp
     sub rsp, 0x28
     call DispatchHardware
     call Eoi
@@ -211,10 +211,10 @@ dq          KxHardwareInt37
 dq          KxHardwareInt38
 dq          KxHardwareInt39
 dq          KxHardwareInt40
-dq          KxExceptionInt41 ; 0x29 __fastfail();
+dq          KxExceptionInt41
 dq          KxHardwareInt42
 dq          KxHardwareInt43
-dq          KxExceptionInt44 ; 0x2C __int2c();
+dq          KxExceptionInt44
 %ASSIGN     VECTOR 45
 %REP        209
 dq          KxHardwareInt%+VECTOR

@@ -121,6 +121,13 @@ typedef struct PACKED _KPRCB
 
     ULONG64 ProcessorId;
     ULONG64 LocalApicId;
+    
+    ULONG ProcessorNumber;
+    
+    struct
+    {
+        ULONG64 Rsp[1];
+    } TaskState;
 } KPRCB, *PKPRCB;
 
 typedef struct PACKED _KDESCRIPTOR_TABLE_PTR
@@ -267,6 +274,8 @@ typedef struct PACKED _KTRAP_FRAME
     ULONG64   Rip;
     ULONG64   SegCs;
     ULONG64   EFlags;
+    ULONG64   Rsp;
+    ULONG64   SegSs;
 } KTRAP_FRAME, *PKTRAP_FRAME;
 
 typedef struct PACKED ACPI_HEADER_ {
