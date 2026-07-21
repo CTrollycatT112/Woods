@@ -22,8 +22,8 @@ PRINTFPATH := $(ROOTPATH)/vendor/printf
 INCPATH := $(ROOTPATH)/src/inc
 SCRIPTSPATH := $(ROOTPATH)/tools/scripts
 
-NTOSKRNLNAME := htoskrnl.exe
-NTOSKRNLPATH := $(SYSTEM32PATH)/$(NTOSKRNLNAME)
+HTOSKRNLNAME := htoskrnl.exe
+HTOSKRNLPATH := $(SYSTEM32PATH)/$(HTOSKRNLNAME)
 
 LIMINECONF := $(ROOTPATH)/limine.conf
 LINKSCRIPT := $(ROOTPATH)/src/boot/woods-x86_64.ld
@@ -101,7 +101,7 @@ chk:
 fre:
 	@$(MAKE) BUILD=fre kernel
 
-kernel: $(NTOSKRNLPATH)
+kernel: $(HTOSKRNLPATH)
 
 dirs:
 	@mkdir -p $(BUILDPATH)
@@ -109,8 +109,8 @@ dirs:
 	@mkdir -p $(SYSTEM32PATH)
 	@mkdir -p $(DRIVERSPATH)
 
-$(NTOSKRNLPATH): dirs $(OBJS)
-	@$(call LOGLD,$(NTOSKRNLNAME))
+$(HTOSKRNLPATH): dirs $(OBJS)
+	@$(call LOGLD,$(HTOSKRNLNAME))
 	@$(LD) $(LDFLAGS) -o $@ $(OBJS)
 
 $(OBJPATH)/%.cpp.o: src/%.cpp

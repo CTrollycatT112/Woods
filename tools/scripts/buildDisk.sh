@@ -6,12 +6,12 @@ BUILD="${1:-chk}"
 
 OUTPATH="$ROOTPATH/out/$BUILD"
 LIMINEPATH="$ROOTPATH/vendor/limine"
-NTOSKRNLPATH="$OUTPATH/system32/htoskrnl.exe"
+HTOSKRNLPATH="$OUTPATH/system32/htoskrnl.exe"
 LIMINECONF="$ROOTPATH/limine.conf"
 DISKIMG="$OUTPATH/htos.img"
 
-if [ ! -f "$NTOSKRNLPATH" ]; then
-    echo "kernel not found at $NTOSKRNLPATH, run make $BUILD first"
+if [ ! -f "$HTOSKRNLPATH" ]; then
+    echo "kernel not found at $HTOSKRNLPATH, run make $BUILD first"
     exit 1
 fi
 
@@ -26,7 +26,7 @@ mmd -i "$DISKIMG@@1M" ::/EFI/BOOT
 mmd -i "$DISKIMG@@1M" ::/system32
 
 mcopy -i "$DISKIMG@@1M" "$LIMINEPATH/BOOTX64.EFI" ::/EFI/BOOT/BOOTX64.EFI
-mcopy -i "$DISKIMG@@1M" "$NTOSKRNLPATH" ::/system32/htoskrnl.exe
+mcopy -i "$DISKIMG@@1M" "$HTOSKRNLPATH" ::/system32/htoskrnl.exe
 mcopy -i "$DISKIMG@@1M" "$LIMINECONF" ::/limine.conf
 
 if [ -d "$OUTPATH/system32/drivers" ] && [ -n "$(ls -A "$OUTPATH/system32/drivers" 2>/dev/null)" ]; then
