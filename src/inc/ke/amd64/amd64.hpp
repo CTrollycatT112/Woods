@@ -10,6 +10,7 @@ ABSTRACT: X86_64 only definitions
 #pragma once
 
 #include "htbase.hpp"
+#include "httypes.hpp"
 
 //
 // CR0 REGISTER
@@ -98,6 +99,8 @@ ABSTRACT: X86_64 only definitions
 
 typedef struct _KPRCB KPRCB, *PKPRCB;
 typedef struct _KDPC KDPC, *PKDPC;
+typedef struct _KPROCESS KPROCESS, *PKPROCESS;
+
 typedef ULONG64 KIRQL, *PKIRQL;
 typedef VOLATILE ULONG64 KSPIN_LOCK, *PKSPIN_LOCK;
 
@@ -131,6 +134,12 @@ typedef struct _KPRCB
         ULONG64 Rsp[1];
     } TaskState;
 } KPRCB, *PKPRCB;
+
+typedef struct _KPROCESS
+{
+    ULONG64 DirectoryTableBase;
+    PVOID   PageDirectory;
+} KPROCESS, *PKPROCESS;
 
 typedef struct PACKED _KDESCRIPTOR_TABLE_PTR
 {
@@ -387,6 +396,21 @@ typedef struct _MADT_LOCAL_APIC_ADDRESS_OVERRIDE {
     ULONG64     LocalApicAddress;
 } MADT_LOCAL_APIC_ADDRESS_OVERRIDE, * PMADT_LOCAL_APIC_ADDRESS_OVERRIDE;
 
+typedef struct _OBJECT_ATTRIBUTES
+{
+    UNICODE_STRING Name;
+    PVOID          Parent;
+    ULONG          Attributes;
+} OBJECT_ATTRIBUTES, *POBJECT_ATTRIBUTES;
+
+typedef struct _FILE_OBJECT
+{
+    PVOID          FsContext;
+    PVOID          FsContext2;
+    ULONG64        CurrentByteOffset;
+    UNICODE_STRING FileName;
+    ULONG          Flags;
+} FILE_OBJECT, *PFILE_OBJECT;
 
 EXTERN PACPI_RSDT HalAcpiRsdt;
 EXTERN ULONG64    MmPhysicalOffset;

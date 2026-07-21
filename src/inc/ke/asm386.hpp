@@ -94,6 +94,54 @@ namespace Ke
 
     /*++
 
+    ROUTINE: A386ReadCr3
+
+    DESCRIPTION: Reads the current value of the CR3 register.
+
+    ARGUMENTS: N/A
+
+    RETURNS: ULONG64
+
+    --*/
+    INLINE
+    ULONG64
+    A386ReadCr3()
+    {
+        ULONG64 Cr3Value;
+        __asm__ __volatile__(
+            "mov %%cr3, %0"
+            : "=r"(Cr3Value)
+            :
+            : "memory"
+        );
+        return Cr3Value;
+    }
+
+    /*++
+
+    ROUTINE: A386WriteCr3
+
+    DESCRIPTION: Writes a address into the CR3 register
+
+    ARGUMENTS: Value - Address of new PML4 page table
+
+    RETURNS: VOID
+
+    --*/
+    INLINE
+    VOID
+    A386WriteCr3(ULONG64 Value)
+    {
+        __asm__ __volatile__(
+            "mov %0, %%cr3"
+            :
+            : "r"(Value)
+            : "memory"
+        );
+    }
+
+    /*++
+
     ROUTINE: A386ReadCr4
 
     DESCRIPTION: Read the current CR4 register
