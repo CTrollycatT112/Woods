@@ -110,6 +110,71 @@ typedef struct PACKED _LIST_ENTRY
     struct _LIST_ENTRY* Blink;
 } LIST_ENTRY, *PLIST_ENTRY;
 
+INLINE
+VOID 
+KeInsertHeadList(PLIST_ENTRY ListHead,
+                 PLIST_ENTRY Entry) {
+    PLIST_ENTRY Flink;
+
+    Flink = ListHead->Flink;
+    Entry->Flink = Flink;
+    Entry->Blink = ListHead;
+    Flink->Blink = Entry;
+    ListHead->Flink = Entry;
+}
+
+INLINE 
+VOID
+KeInsertTailList(PLIST_ENTRY ListHead,
+                 PLIST_ENTRY Entry) {
+    PLIST_ENTRY Blink;
+
+    Blink = ListHead->Blink;
+    Entry->Flink = ListHead;
+    Entry->Blink = Blink;
+    Blink->Flink = Entry;
+    ListHead->Blink = Entry;
+}
+
+INLINE
+VOID 
+KeRemoveList(PLIST_ENTRY Entry) {
+    PLIST_ENTRY Flink;
+    PLIST_ENTRY Blink;
+
+    Flink = Entry->Flink;
+    Blink = Entry->Blink;
+
+    Flink->Blink = Blink;
+    Blink->Flink = Flink;
+}
+
+INLINE 
+VOID 
+KeInitializeHeadList(PLIST_ENTRY Entry) {
+    Entry->Flink = Entry;
+    Entry->Blink = Entry;
+}
+
+INLINE 
+BOOLEAN 
+KeEmptyList(PLIST_ENTRY Entry) {
+    return (BOOLEAN)(Entry == Entry->Flink);
+}
+
+INLINE
+PLIST_ENTRY
+KeRemoveHeadList(PLIST_ENTRY ListHead)
+{
+    PLIST_ENTRY Flink = ListHead->Flink;
+    KeRemoveList(Flink);
+    return Flink;
+}
+
+#define CONTAINING_RECORD(address, type, field) ((type *)( \
+                                                  (PCHAR)(address) - \
+                                                  (ULONG64)(&((type *)0)->field)))
+
 #define MINCHAR     INT8_MIN
 #define MAXCHAR     INT8_MAX
 #define MINSHORT    INT16_MIN

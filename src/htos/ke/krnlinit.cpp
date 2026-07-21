@@ -7,6 +7,7 @@ AUTHOR: Trollycat
 ABSTRACT: Kernel entry point
 
 --*/
+#include "hal/hal.hpp"
 #include "htbase.hpp"
 #include "limine.h"
 #include "htversion.hpp"
@@ -20,16 +21,48 @@ ABSTRACT: Kernel entry point
 VOLATILE
 LIMINE_REQUEST 
 QWORD
-BaseRevision[] = LIMINE_BASE_REVISION(3);
+BaseRevision[] = LIMINE_BASE_REVISION(0);
+
+VOLATILE
+struct limine_stack_size_request stack_size_request =
+{
+    .id         = LIMINE_STACK_SIZE_REQUEST_ID,
+    .revision   = 0,
+    .response   = NULL,
+    .stack_size = 4080 * 8
+};
+
+VOLATILE
+struct limine_module_request module_request =
+{
+    .id                    = LIMINE_MODULE_REQUEST_ID,
+    .revision              = 0,
+    .response              = NULL,
+    .internal_module_count = 0,
+    .internal_modules      = NULL
+};
 
 VOLATILE
 LIMINE_REQUEST
 struct limine_memmap_request memmap_request =
 {
-    .id = LIMINE_MEMMAP_REQUEST_ID,
+    .id       = LIMINE_MEMMAP_REQUEST_ID,
     .revision = 0,
     .response = NULL
 };
+
+VOLATILE
+LIMINE_REQUEST
+struct limine_hhdm_request hhdm_request =
+{
+    .id       = LIMINE_HHDM_REQUEST_ID,
+    .revision = 0,
+    .response = NULL
+};
+
+STATIC KPRCB BootPrcb;
+
+ULONG64 MmPhysicalOffset = 0;
 
 namespace Ki
 {
@@ -50,8 +83,7 @@ namespace Ki
     VOID SystemStartup()
     {
         ASSERT(LIMINE_BASE_REVISION_SUPPORTED(BaseRevision) == TRUE);
-
-        Ki::InitializeGdt();
+        MmPhysicalOffset = hhdm_request.response->offset;
 
         Inbv::Initialize();
 
@@ -62,8 +94,25 @@ namespace Ki
                         7);
 
         Rtl::Print("%s", OS_VERSION_STRING);
+
+        Rtl::Print("   ");
+        Rtl::Print("    ");
+
+
         Rtl::Print("GDT Init... OK");
-        
+        Ki::InitializeGdt();
+
+        Rtl::Print("IDT Init.. Ok");
+        Hal::InitializeIdt();
+
+        Rtl::Print("PRCB Init... Ok");
+        InitializePrcb(&BootPrcb);
+
+        Rtl::Print("ACPI Init... Ok");
+        Hal::InitializeAcpi();
+
+        Rtl::Print("    ");
+
         for (;;);
     } 
 } // namespace Ki

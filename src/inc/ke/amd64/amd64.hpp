@@ -52,11 +52,13 @@ ABSTRACT: X86_64 only definitions
 #define GDT_USER_DATA   0x18
 
 //
-// TSS AND CALL GATES
+// TSS AND SEGMENTS
 //
-#define SEGMENT_TYPE_TSS       0b1001
-#define SEGMENT_TYPE_CALL_GATE 0b1100
-#define TSS_FLAGS0_PRESENT     (1U << 7)
+#define SEGMENT_TYPE_TSS                0b1001
+#define SEGMENT_TYPE_CALL_GATE          0b1100
+#define SEGMENT_TYPE_INTERRUPT_GATE     0b1110
+#define SEGMENT_TYPE_TRAP_GATE          0b1111
+#define TSS_FLAGS0_PRESENT             (1U << 7)
 
 //
 // GDT INDEXES
@@ -65,6 +67,61 @@ ABSTRACT: X86_64 only definitions
 #define INDEX_GDT_KERNEL_DATA (GDT_KERNEL_DATA >> 3)
 #define INDEX_GDT_USER_DATA   (GDT_USER_DATA >> 3)
 #define INDEX_GDT_USER_CODE   (GDT_USER_CODE >> 3)
+
+//
+// ACPI
+//
+#define ACPI_MADT_TYPE_PROCESSOR_LOCAL_APIC             0
+#define ACPI_MADT_TYPE_IO_APIC                          1
+#define ACPI_MADT_TYPE_INTERRUPT_SOURCE_OVERRIDE_APIC   2
+#define ACPI_MADT_TYPE_NON_MASKABLE_INTERRUPT_APIC      4
+#define ACPI_MADT_TYPE_LOCAL_APIC_ADDRESS_OVERRIDE_APIC 5
+
+//
+// MADT
+//
+#define ACPI_MADT_TYPE_PROCESSOR_LOCAL_APIC             0
+#define ACPI_MADT_TYPE_IO_APIC                          1
+#define ACPI_MADT_TYPE_INTERRUPT_SOURCE_OVERRIDE_APIC   2
+#define ACPI_MADT_TYPE_NON_MASKABLE_INTERRUPT_APIC      4
+#define ACPI_MADT_TYPE_LOCAL_APIC_ADDRESS_OVERRIDE_APIC 5
+
+//
+// IRQLs
+//
+#define PASSIVE_LEVEL   0
+#define APC_LEVEL       1
+#define DISPATCH_LEVEL  2
+#define HIGH_LEVEL      3
+#define INPUT_LEVEL     6
+#define DISK_LEVEL      7
+
+typedef struct _KPRCB KPRCB, *PKPRCB;
+typedef struct _KDPC KDPC, *PKDPC;
+typedef ULONG64 KIRQL, *PKIRQL;
+
+typedef VOID(*PKDEFFERED_ROUTINE)(PKDPC Dpc, PVOID DefferedContext);
+
+typedef struct PACKED _KDPC
+{
+    ULONG64            ProcessorNumber;
+    PKDEFFERED_ROUTINE DefferedRoutine;
+    PVOID              DefferedContext;
+    BOOLEAN            Completed;
+    LIST_ENTRY         DpcQueue;
+} KDPC, *PKDPC;
+
+typedef struct PACKED _KPRCB
+{
+    PVOID       Self;
+    LIST_ENTRY  DpcQueueHead;
+    ULONG64     DpcQueueDepth;
+    BOOLEAN     DpcInterruptRequested;
+    ULONG64     InterruptCount;
+
+    ULONG64 ProcessorId;
+    ULONG64 LocalApicId;
+} KPRCB, *PKPRCB;
 
 typedef struct PACKED _KDESCRIPTOR_TABLE_PTR
 {
@@ -111,6 +168,225 @@ typedef struct PACKED _KDESCRIPTOR_TABLE
     KDESCRIPTOR_TABLE_DESCRIPTOR Entries[5];
     KTASK_DESCRIPTOR_TABLE_DESCRIPTOR Tss;
 } KDESCRIPTOR_TABLE, *PKDESCRIPTOR_TABLE;
+
+typedef struct PACKED _KINTERRUPT_DESCRIPTOR
+{
+    struct
+    {
+        ULONG64 OffsetLow           : 16;
+        ULONG64 SegmentSelector     : 16;
+        ULONG64 Ist                 : 3;
+        ULONG64 Reserved            : 5;
+        ULONG64 Type                : 4;
+        ULONG64 Reserved1           : 1;
+        ULONG64 PrivilegeLevel      : 2;
+        ULONG64 Present             : 1;
+        ULONG64 OffsetMid           : 16;
+        ULONG64 OffsetHigh          : 32;
+        ULONG64 Reserved2           : 32;
+    };
+} KINTERRUPT_DESCRIPTOR, *PKINTERRUPT_DESCRIPTOR;
+
+typedef struct PACKED _KINTERRUPT_DESCRIPTOR_PTR
+{
+    USHORT  Size;
+    ULONG64 Address;
+} KINTERRUPT_DESCRIPTOR_PTR, *PKINTERRUPT_DESCRIPTOR_PTR;
+
+typedef UCHAR KX86_REG[10];
+typedef UCHAR KXMM_REG[16];
+
+typedef union PACKED _KMMX_REG
+{
+    struct
+    {
+        KX86_REG St;
+        UCHAR    StReserved[6];
+    };
+
+    struct
+    {
+        UCHAR   MmValue[8];
+        UCHAR   MmReserved[8];
+    };
+} KMMX_REG, *PKMMX_REG;
+
+typedef struct PACKED _KFXSAVE64
+{
+    USHORT   Control;
+    USHORT   Status;
+    UCHAR    Tag;
+    UCHAR    Reserved1;
+    USHORT   Opcode;
+    ULONG64  Ip64;
+    ULONG64  Dp64;
+    ULONG32  Mxcsr;
+    ULONG32  MxcsrMask;
+    KMMX_REG MmxReg[8];
+    KXMM_REG XmmReg[16];
+    UCHAR    Reserved2[48];
+    UCHAR    Available[48];
+} KFXSAVE64, *PKFXSAVE64;
+
+static_assert(sizeof(KFXSAVE64) == 512, "KFXSAVE64 must match the real FXSAVE area size");
+
+typedef struct PACKED _KTRAP_FRAME
+{
+    KFXSAVE64 Fxsave64;
+    ULONG64   Align2;
+    ULONG64   Align1;
+    ULONG64   Align0;
+    ULONG64   Dr7;
+    ULONG64   Dr6;
+    ULONG64   Dr3;
+    ULONG64   Dr2;
+    ULONG64   Dr1;
+    ULONG64   Dr0;
+    ULONG64   Cr3;
+    ULONG64   SegGs;
+    ULONG64   SegFs;
+    ULONG64   SegEs;
+    ULONG64   SegDs;
+    ULONG64   R15;
+    ULONG64   R14;
+    ULONG64   R13;
+    ULONG64   R12;
+    ULONG64   R11;
+    ULONG64   R10;
+    ULONG64   R9;
+    ULONG64   R8;
+    ULONG64   Rdi;
+    ULONG64   Rsi;
+    ULONG64   Rbp;
+    ULONG64   Rdx;
+    ULONG64   Rcx;
+    ULONG64   Rbx;
+    ULONG64   Rax;
+    ULONG64   Interrupt;
+    ULONG64   Error;
+    ULONG64   Rip;
+    ULONG64   SegCs;
+    ULONG64   EFlags;
+} KTRAP_FRAME, *PKTRAP_FRAME;
+
+typedef struct PACKED ACPI_HEADER_ {
+    CHAR    Signature[4];
+    ULONG32 Length;
+    UCHAR   Revision;
+    UCHAR   Checksum;
+    CHAR    Oem[6];
+    CHAR    OemTable[8];
+    ULONG32 OemRevision;
+    ULONG32 CreatorId;
+    ULONG32 CreatorRevision;
+} ACPI_HEADER, *PACPI_HEADER;
+
+typedef struct PACKED _ACPI_RSDT {
+    ACPI_HEADER Header;
+    UCHAR       Tables[];
+} ACPI_RSDT, *PACPI_RSDT;
+
+typedef struct PACKED _ACPI_RSDP {
+    CHAR Signature[8];
+    UCHAR Checksum;
+    CHAR Oem[6];
+    UCHAR Revision;
+    ULONG32 Rsdt;
+    ULONG32 Length;
+    ULONG64 Xsdt;
+    UCHAR ChecksumEx;
+} ACPI_RSDP, *PACPI_RSDP;
+
+
+typedef struct PACKED ACPI_HPET_TABLE_ {
+    ACPI_HEADER Header;
+    UCHAR   HardwareRevision;
+    UCHAR   ComparatorCount    : 5;
+    UCHAR   CounterSize        : 1;
+    UCHAR   Reserved           : 1;
+    UCHAR   LegacyReplacement  : 1;
+    USHORT  PciVendorId;
+    UCHAR   AddressSpaceId;
+    UCHAR   RegisterBitWidth;
+    UCHAR   RegisterBitOffset;
+    UCHAR   Reserved0;
+    ULONG64 Address;
+    UCHAR   HpetNumber;
+    USHORT  MinimumTick;
+    UCHAR   PageProtection;
+} ACPI_HPET_TABLE, *PACPI_HPET_TABLE;
+
+typedef struct PACKED _ACPI_HPET {
+    VOLATILE ULONG64          GeneralCapabilities;
+    ULONG64                   Reserved1;
+    VOLATILE ULONG64          GeneralConfiguration;
+    ULONG64                   Reserved2;
+    VOLATILE ULONG64          GeneralInterruptStatus;
+    ULONG64                   Reserved3;
+    ULONG64                   Reserved4[24];
+    VOLATILE ULONG64          CounterValue;
+    ULONG64          Reserved5;
+} ACPI_HPET, *PACPI_HPET;
+
+typedef struct PACKED _MADT_HEADER {
+    UCHAR       EntryType;
+    UCHAR       RecordLength;
+} MADT_HEADER, *PMADT_HEADER;
+
+typedef struct PACKED _MADT {
+    ACPI_HEADER  Header;
+    ULONG        LocalApicAddress;
+    ULONG        Flags;
+    UCHAR        Entry0;
+} MADT, *PMADT;
+
+typedef struct PACKED _MADT_PROCESSOR_LOCAL_APIC {
+    MADT_HEADER Header;
+    UCHAR       AcpiProcessorId;
+    UCHAR       ApicId;
+    ULONG       Flags;
+} MADT_PROCESSOR_LOCAL_APIC, *PMADT_PROCESSOR_LOCAL_APIC;
+
+typedef struct PACKED _MADT_IO_APIC {
+    MADT_HEADER Header;
+    UCHAR       IoApicId;
+    UCHAR       Reserved;
+    ULONG       IoApicAddress;
+    ULONG       GlobalSystemInterruptBase;
+} MADT_IO_APIC, *PMADT_IO_APIC;
+
+typedef struct PACKED _MADT_INTERRUPT_SOURCE_OVERRIDE_APIC {
+    MADT_HEADER Header;
+    UCHAR       BusSource;
+    UCHAR       IrqSource;
+    ULONG       GlobalSystemInterrupt;
+    USHORT      Flags;
+} MADT_INTERRUPT_SOURCE_OVERRIDE_APIC, *PMADT_INTERRUPT_SOURCE_OVERRIDE_APIC;
+
+typedef struct PACKED _MADT_NON_MASKABLE_INTERRUPT_APIC {
+    MADT_HEADER Header;
+    UCHAR       AcpiProcessorId;
+    USHORT      Flags;
+    UCHAR       LocalInterrupt;
+} MADT_NON_MASKABLE_INTERRUPT_APIC, *PMADT_NON_MASKABLE_INTERRUPT_APIC;
+
+typedef struct _MADT_LOCAL_APIC_ADDRESS_OVERRIDE {
+    MADT_HEADER Header;
+    USHORT      Reserved;
+    ULONG64     LocalApicAddress;
+} MADT_LOCAL_APIC_ADDRESS_OVERRIDE, * PMADT_LOCAL_APIC_ADDRESS_OVERRIDE;
+
+
+EXTERN PACPI_RSDT HalAcpiRsdt;
+EXTERN ULONG64 MmPhysicalOffset;
+
+//
+// So this section is a little weird
+// These functions are mostly assembly helpers
+// I decided not to use namespace Ke::
+// So that asm files can use them
+// Might move later..?
+//
 
 /*++
 
@@ -251,6 +527,94 @@ Ke386Lgdt(PKDESCRIPTOR_TABLE_PTR TablePtr)
 
 /*++
 
+ROUTINE: KeGetCurrentIrql
+
+DESCRIPTION: Reads the hardware interrupt request level
+
+ARGUMENTS: N/A
+
+RETURNS: The current KIRQL value
+
+--*/
+INLINE
+KIRQL
+KeGetCurrentIrql()
+{
+    KIRQL Value;
+    __asm__ volatile("mov %%cr8, %0" : "=r"(Value));
+    return Value;
+}
+
+/*++
+
+ROUTINE: KeRaiseIrql
+
+DESCRIPTION: Raises the hardware interrupt priority to a higher level
+
+ARGUMENTS: NewIrql - The priority level,
+           OldIrql - Pointer to the previous level
+
+RETURNS: N/A
+
+--*/
+INLINE
+VOID
+KeRaiseIrql(KIRQL NewIrql, PKIRQL OldIrql)
+{
+    *OldIrql = KeGetCurrentIrql();
+    if (*OldIrql > NewIrql)
+    {
+        return;
+    }
+
+    __asm__ volatile("mov %0, %%cr8" :: "r"(NewIrql) : "memory");
+}
+
+/*++
+
+ROUTINE: KeLowerIrql
+
+DESCRIPTION: Lowers hardware interrupt to a safer level
+
+ARGUMENTS: NewIrql - The target level
+
+RETURNS: N/A
+
+--*/
+INLINE
+VOID
+KeLowerIrql(KIRQL NewIrql)
+{
+    if (NewIrql > KeGetCurrentIrql())
+    {
+        return;
+    }
+
+    __asm__ volatile("mov %0, %%cr8" :: "r"(NewIrql) : "memory");
+}
+
+/*++
+
+ROUTINE: KeQueryCurrentProcessor
+
+DESCRIPTION: Looks up the structure of the active core
+
+ARGUMENTS: N/A
+
+RETURNS: Pointer to the KPRCB structure
+
+--*/
+INLINE
+PKPRCB
+KeQueryCurrentProcessor()
+{
+    PKPRCB Prcb;
+    __asm__ volatile("mov %%gs:0, %0" : "=r"(Prcb));
+    return Prcb;
+}
+
+/*++
+
 ROUTINE: KiFlushGdt
 
 DESCRIPTION: Assembly GDT reset
@@ -277,4 +641,90 @@ namespace Ki
     --*/
     VOID
     InitializeGdt();
+} // namespace Ki
+
+namespace Ke
+{
+
+    /*++
+
+    ROUTINE: InitializeDpc
+
+    DESCRIPTION: Configures a new DPC object
+
+    ARGUMENTS: Dpc - Pointer to KDPC object,
+               Routine - Function to run,
+               Context - Data for the function
+
+    RETURNS: N/A
+
+    --*/
+    VOID
+    InitializeDpc(PKDPC Dpc,
+                  PKDEFFERED_ROUTINE Routine,
+                  PVOID Context);
+    
+    /*++
+
+    ROUTINE: InsertQueueDpc
+
+    DESCRIPTION: Adds a deferred function to list
+
+    ARGUMENTS: Dpc - Pointer to KDPC object
+
+    RETURNS: N/A
+
+    --*/
+    VOID
+    InsertQueueDpc(PKDPC Dpc);
+} // namespace Ke
+
+namespace Ki
+{
+    VOID
+    InitializePrcb(PKPRCB Processor);
+    
+    /*++
+
+    ROUTINE: ProcessDpcQueue
+
+    DESCRIPTION: Drains and processes DPC queue
+
+    ARGUMENTS: N/A
+
+    RETURNS: VOID
+
+    --*/
+    VOID
+    ProcessDpcQueue();
+    
+    /*++
+
+    ROUTINE: DispatchHardware
+
+    DESCRIPTION: Routes physical hardware interrupts to device handlers
+
+    ARGUMENTS: TrapFrame - Pointer to the saved processor state
+
+    RETURNS: VOID
+
+    --*/
+    EXTERN_C
+    VOID
+    DispatchHardware(PKTRAP_FRAME TrapFrame);
+
+    /*++
+
+    ROUTINE: DispatchException
+
+    DESCRIPTION: Catches processor errors and halts
+
+    ARGUMENTS: TrapFrame - Pointer to the saved processor state
+
+    RETURNS: VOID
+
+    --*/
+    EXTERN_C
+    VOID
+    DispatchException(PKTRAP_FRAME TrapFrame);
 } // namespace Ki

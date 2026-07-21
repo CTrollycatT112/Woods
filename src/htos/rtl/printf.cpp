@@ -50,6 +50,11 @@ EXTERN_C {
                 Format++;
             }
 
+
+            while (*Format == L'l' || *Format == L'h') {
+                Format++;
+            }
+
             switch (*Format++)
             {
                 case L'%':
@@ -159,6 +164,10 @@ EXTERN_C {
 
             while (*Format >= '0' && *Format <= '9') {
                 Width = Width * 10 + (*Format - '0');
+                Format++;
+            }
+
+            while (*Format == 'l' || *Format == 'h') {
                 Format++;
             }
 
