@@ -1,3 +1,17 @@
+// NOTE:
+//      DPC FUNCTIONS ARE HANDLED IN 'dispatch.cpp'
+//      JUST STORED IN A SEPERATE FILE (dpcqueue over intrdispatch)
+
+/*++
+
+MODULE: Deferred Procedure Call
+
+AUTHOR: Trollycat
+
+ABSTRACT: Manages Deferred Procedure Calls at DISPATCH_LEVEL,
+          NT LARP.
+
+--*/
 #include "ke/amd64/amd64.hpp"
 
 namespace Ki

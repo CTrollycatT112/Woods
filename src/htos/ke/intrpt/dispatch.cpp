@@ -4,7 +4,7 @@ MODULE: Interrupt Dispatcher
 
 AUTHOR: Trollycat
 
-ABSTRACT: Handles dispatching any interrupts (Or even DPC)
+ABSTRACT: Dispatcher module that handles interrupts, and DPC
 
 --*/
 #include "htbase.hpp"

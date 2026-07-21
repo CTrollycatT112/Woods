@@ -1,3 +1,12 @@
+/*++
+
+MODULE: Interrupt Dispatcher
+
+AUTHOR: Trollycat
+
+ABSTRACT: Dispatcher module that handles interrupts
+
+--*/
 #include "ke/amd64/amd64.hpp"
 
 namespace Ki

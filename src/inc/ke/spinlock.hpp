@@ -19,6 +19,21 @@ ABSTRACT:
 
 namespace Ke
 {
+    
+    /*++
+
+    ROUTINE: AcquireSpinLock
+
+    DESCRIPTION: Disable thread switching,
+                 lock the resource
+
+    ARGUMENTS: SpinLock     - Pointer to the lock you want to grab,
+               PreviousIrql - Variable to store old IRQL 
+
+    RETURNS: VOID
+
+    --*/
+
     INLINE
     VOID
     AcquireSpinLock(PKSPIN_LOCK SpinLock, 
@@ -32,6 +47,20 @@ namespace Ke
         }
     }
 
+    /*++
+
+    ROUTINE: ReleaseSpinLock
+
+    DESCRIPTION: Unlocks the resource,
+                 Allow thread switching again
+
+    ARGUMENTS: SpinLock     - Pointer to the lock you want to release
+               PreviousIrql - Old IRQL that you stored during lock
+
+    RETURNS: VOID
+
+    --*/
+
     INLINE
     VOID
     ReleaseSpinLock(PKSPIN_LOCK SpinLock, 
@@ -41,6 +70,19 @@ namespace Ke
         Ke::LowerIrql(PreviousIrql);
     }
 
+    /*++
+
+    ROUTINE: AcquireSpinLockAtDpcLevel
+
+    DESCRIPTION: Fast lock,
+                 skips changing the CPU priority level,
+                 Thread switching is already disabled
+
+    ARGUMENTS: SpinLock - Pointer to the lock you want to grab
+
+    RETURNS: VOID
+
+    --*/
 
     INLINE
     VOID
@@ -51,6 +93,20 @@ namespace Ke
             __builtin_ia32_pause();
         }
     }
+    
+    /*++
+
+    ROUTINE: ReleaseSpinLockAtDpcLevel
+
+    DESCRIPTION: Fast unlock,
+                 Unlock the resource,
+                 Skip changing CPU priority level
+
+    ARGUMENTS: SpinLock - Pointer to the lock you want to release
+
+    RETURNS: VOID
+
+    --*/
 
     INLINE
     VOID
@@ -58,6 +114,19 @@ namespace Ke
     {
         __atomic_exchange_n(SpinLock, 0, __ATOMIC_SEQ_CST);
     }
+
+    /*++
+
+    ROUTINE: QuerySpinLock
+
+    DESCRIPTION: Check if a resource is currently locked,
+                 DOES NOT ATTEMPT TO GRAB IT...
+
+    ARGUMENTS: SpinLock - Pointer to the lock you want to check
+
+    RETURNS: BOOL
+
+    --*/
 
     INLINE
     BOOL
