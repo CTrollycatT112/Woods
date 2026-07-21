@@ -13,6 +13,7 @@ ABSTRACT: Kernel entry point
 #include "htversion.hpp"
 
 #include "ke/amd64/amd64.hpp"
+#include "ke/processor.hpp"
 
 #include "rtl/rtl.hpp"
 #include "inbv/inbv.hpp"

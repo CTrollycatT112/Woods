@@ -7,15 +7,16 @@ AUTHOR: Trollycat
 ABSTRACT: BugCheck/Panic System, the operating system cannot recover
 
 --*/
-#include "ke/bug.hpp"
-
 #include "htdef.hpp"
-#include "inbv/inbv.hpp"
-#include "rtl/rtl.hpp"
-
 #include "bugcodes.hpp"
 
+#include "rtl/rtl.hpp"
+
+#include "ke/bug.hpp"
 #include "ke/amd64/amd64.hpp"
+#include "ke/processor.hpp"
+
+#include "inbv/inbv.hpp"
 
 namespace Ke
 {
@@ -136,7 +137,7 @@ namespace Ke
                     (PVOID)BugCheckParameter3,
                     (PVOID)BugCheckParameter4);
 
-        PKPRCB Prcb = KeQueryCurrentProcessor();
+        PKPRCB Prcb = Ke::QueryCurrentProcessor();
         if (Prcb != NULL)
         {
             Rtl::KdPrint(L"Bug check called on processor %p", (PVOID)(ULONG64)Prcb->ProcessorNumber);

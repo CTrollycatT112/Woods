@@ -8,6 +8,8 @@ ABSTRACT: AMD64 Specific Code
 
 --*/
 #include "ke/amd64/amd64.hpp"
+#include "ke/asm386.hpp"
+
 
 #include "rtl/rtl.hpp"
 
@@ -24,18 +26,18 @@ namespace Ki
         // CR0
         // ENABLE (EM, MP)
         //
-        ULONG64 cr0 = Ke386ReadCr0();
+        ULONG64 cr0 = Ke::A386ReadCr0();
         cr0 &= ~CR0_EM;
         cr0 |= CR0_MP;
-        Ke386WriteCr0(cr0);
+        Ke::A386WriteCr0(cr0);
 
         //
         // CR4
         // ENABLE (OSFXSR, OSXMMEXCPT)
         //
-        ULONG64 Cr4 = Ke386ReadCr4();
+        ULONG64 Cr4 = Ke::A386ReadCr4();
         Cr4 |= (CR4_OSFXSR | CR4_OSXMMEXCPT);
-        Ke386WriteCr4(Cr4);
+        Ke::A386WriteCr4(Cr4);
 
         //
         // KERNEL CODE
@@ -98,10 +100,10 @@ namespace Ki
         DescriptorTablePtr.Limit = sizeof(KDESCRIPTOR_TABLE) - 1;
         DescriptorTablePtr.Base  = (ULONG64)&DescriptorTable;
 
-        Ke386Lgdt(&DescriptorTablePtr);
+        Ke::A386Lgdt(&DescriptorTablePtr);
         KiFlushGdt();
 
-        Ke386SetTr(OFFSETOF(KDESCRIPTOR_TABLE, Tss));
+        Ke::A386SetTr(OFFSETOF(KDESCRIPTOR_TABLE, Tss));
 
     }
 } // namespace Ki

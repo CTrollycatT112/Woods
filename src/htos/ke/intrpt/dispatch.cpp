@@ -11,10 +11,13 @@ ABSTRACT: Handles dispatching any interrupts (Or even DPC)
 #include "bugcodes.hpp"
 
 #include "ke/amd64/amd64.hpp"
-
 #include "ke/bug.hpp"
-#include "rtl/rtl.hpp"
+#include "ke/irql.hpp"
+#include "ke/processor.hpp"
+#include "ke/dpcqueue.hpp"
+#include "ke/intrdispatch.hpp"
 
+#include "rtl/rtl.hpp"
 
 namespace Ki
 {
@@ -49,9 +52,9 @@ namespace Ki
     ProcessDpcQueue()
     {
         KIRQL PreviousIrql = 0;
-        KeRaiseIrql(DISPATCH_LEVEL,&PreviousIrql);
+        Ke::RaiseIrql(DISPATCH_LEVEL,&PreviousIrql);
 
-        PKPRCB Processor = KeQueryCurrentProcessor();
+        PKPRCB Processor = Ke::QueryCurrentProcessor();
         
         while (!KeEmptyList(&Processor->DpcQueueHead))
         {
@@ -74,7 +77,28 @@ namespace Ki
         }
 
         Processor->DpcInterruptRequested = FALSE;
-        KeLowerIrql(PreviousIrql);
+        Ke::LowerIrql(PreviousIrql);
+    }
+
+    VOID
+    InitializeDpc(PKDPC Dpc,
+                  PKDEFFERED_ROUTINE Routine,
+                  PVOID Context)
+    {
+        Dpc->ProcessorNumber = reinterpret_cast<ULONG64>(Ke::QueryCurrentProcessor());
+        Dpc->Completed       = FALSE;
+        Dpc->DefferedContext = Context;
+        Dpc->DefferedRoutine = Routine;
+    }
+
+    VOID
+    InsertQueueDpc(PKDPC Dpc)
+    {
+        PKPRCB Processor   = Ke::QueryCurrentProcessor();
+        Dpc->Completed = FALSE;
+
+        KeInsertTailList(&Processor->DpcQueueHead,&Dpc->DpcQueue);
+        Processor->DpcQueueDepth++;
     }
 
     EXTERN_C
@@ -110,27 +134,3 @@ namespace Ki
                                             TrapFrame);
     }
 } // namespace Ki
-
-namespace Ke
-{
-    VOID
-    InitializeDpc(PKDPC Dpc,
-                  PKDEFFERED_ROUTINE Routine,
-                  PVOID Context)
-    {
-        Dpc->ProcessorNumber = reinterpret_cast<ULONG64>(KeQueryCurrentProcessor());
-        Dpc->Completed       = FALSE;
-        Dpc->DefferedContext = Context;
-        Dpc->DefferedRoutine = Routine;
-    }
-
-    VOID
-    InsertQueueDpc(PKDPC Dpc)
-    {
-        PKPRCB Processor   = KeQueryCurrentProcessor();
-        Dpc->Completed = FALSE;
-
-        KeInsertTailList(&Processor->DpcQueueHead,&Dpc->DpcQueue);
-        Processor->DpcQueueDepth++;
-    }
-} // namespace Ke

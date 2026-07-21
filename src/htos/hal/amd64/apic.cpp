@@ -11,6 +11,7 @@ ABSTRACT: Hardware interrupt routing
 #include "hal/ioport.hpp"
 
 #include "ke/amd64/amd64.hpp"
+#include "ke/processor.hpp"
 
 #include "rtl/rtl.hpp"
 
@@ -372,6 +373,6 @@ namespace Hal
     UCHAR 
     GetLocalApicId()
     {
-        return KeQueryCurrentProcessor()->LocalApicId;
+        return Ke::QueryCurrentProcessor()->LocalApicId;
     }
 } // namespace Hal
