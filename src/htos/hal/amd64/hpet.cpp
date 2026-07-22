@@ -28,6 +28,7 @@ STATIC PACPI_HPET Hpet            = NULL;
 
 namespace Hal
 {
+    CODESEG(".init")
     VOID
     InitializeHpet()
     {

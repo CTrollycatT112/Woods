@@ -17,6 +17,7 @@ EXTERN ULONG64 KxIntHandlerTable[];
 
 namespace Hal
 {
+    CODESEG(".init")
     VOID LoadIdt()
     {
         __asm__ volatile (
@@ -27,6 +28,7 @@ namespace Hal
         );
     }
 
+    CODESEG(".init")
     VOID
     InitializeIdt()
     {

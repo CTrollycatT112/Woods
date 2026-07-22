@@ -39,6 +39,7 @@ EXTERN limine_rsdp_request rsdp_request;
 
 namespace Hal
 {
+    CODESEG(".init")
     VOID
     InitializeApic()
     {

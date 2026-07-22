@@ -18,6 +18,9 @@ ABSTRACT: Stores internal memory management structures,
 #include "ke/spinlock.hpp"
 #include "ke/asm386.hpp"
 
+EXTERN CHAR __InitStart[];
+EXTERN CHAR __InitEnd[];
+
 typedef union _CR3
 {
     struct
@@ -443,6 +446,25 @@ EXTERN ULONG64    MmKernelEnd;
 
 namespace Mm
 {
+    /*++
+
+    ROUTINE: FreeInitCode
+
+    DESCRIPTION: Free's the .init section from memory,
+                 Any function that is called once is placed here,
+                 After it is called, it will be removed from memory,
+                 This gives us the tiniest amount of RAM back,
+                 technically not even worth it to do in a small kernel,
+                 but it's a fun concept and could save some space..
+
+    ARGUMENTS: N/A
+
+    RETURNS: VOID
+
+    --*/
+    VOID
+    FreeInitCode();
+
     /*++
 
     ROUTINE: FlushAddress

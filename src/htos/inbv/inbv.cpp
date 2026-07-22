@@ -146,6 +146,7 @@ namespace Inbv
         Ke::ReleaseSpinLock(&InbvLock, PreviousIrql);
     }
 
+    CODESEG(".init")
     VOID
     Initialize()
     {

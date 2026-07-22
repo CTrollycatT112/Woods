@@ -84,8 +84,9 @@ namespace Ki
 
     --*/
     EXTERN_C
+    CODESEG(".text")
+
     NORETURN
-    CODESEG(".text.startup")
     VOID SystemStartup()
     {
         ASSERT(LIMINE_BASE_REVISION_SUPPORTED(BaseRevision) == TRUE);
@@ -110,10 +111,11 @@ namespace Ki
 
         Ke::LowerIrql(PASSIVE_LEVEL);
 
+        Mm::FreeInitCode();
+
         while (TRUE)
         {
             __asm__ volatile("hlt");
         }
     }
-
 } // namespace Ki

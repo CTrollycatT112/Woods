@@ -23,6 +23,12 @@ SECTIONS
         __TextEnd = .;
     } :text
 
+    .init : {
+        __InitStart = .;
+        *(.init .init.*)
+        __InitEnd = .;
+    } :text
+
     .limine_requests : {
         KEEP(*(.limine_requests .limine_requests.*))
     } :text

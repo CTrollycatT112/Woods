@@ -7,6 +7,7 @@ AUTHOR: Trollycat
 ABSTRACT: AMD64 Specific Code
 
 --*/
+#include "htdef.hpp"
 #include "ke/amd64/amd64.hpp"
 #include "ke/asm386.hpp"
 
@@ -19,6 +20,7 @@ STATIC KTASK_STATE           TaskState;
 
 namespace Ki
 {
+    CODESEG(".init")
     VOID
     InitializeGdt()
     {

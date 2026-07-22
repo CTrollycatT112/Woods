@@ -88,7 +88,7 @@ namespace Mm
     NODISCARD
     ULONG64
     AllocatePhysical(MM_VA_TYPE Reason,
-                    ULONG64    MinimumPhysAddress)
+                    ULONG64     MinimumPhysAddress)
     {
         ULONG64 EffectiveMinimum = (MiForceHighAlloc && MinimumPhysAddress < 0x200000) 
                                    ? 0x200000 

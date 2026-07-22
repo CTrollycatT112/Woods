@@ -13,6 +13,7 @@ ABSTRACT: Initializes the memory manager,
 #include "ke/amd64/amd64.hpp"
 #include "limine.h"
 #include "mm/mi.hpp"
+#include "mm/mm.hpp"
 #include "rtl/rtl.hpp"
 
 STATIC
@@ -282,4 +283,43 @@ namespace Mm
         KdKernelBase = KernelBaseVirtual;
         KdKernelSize = (128 * 1024 * 1024);
     }
-}
+
+    VOID
+    FreeInitCode()
+    {
+        ULONG64 InitStart = reinterpret_cast<ULONG64>(__InitStart);
+        ULONG64 InitEnd   = reinterpret_cast<ULONG64>(__InitEnd);
+
+        InitStart = ALIGN_DOWN(InitStart, PAGE_SIZE);
+        InitEnd   = ALIGN_UP(InitEnd, PAGE_SIZE);
+
+        ULONG64 RawStart = reinterpret_cast<ULONG64>(__InitStart);
+        ULONG64 RawEnd   = reinterpret_cast<ULONG64>(__InitEnd);
+        ULONG64 RawSize  = RawEnd - RawStart;
+
+        Rtl::KdPrint(L"RECLAIMING SECTION .init: %lu bytes", RawSize);
+
+        for (ULONG64 Va = InitStart; Va < InitEnd; Va += PAGE_SIZE)
+        {
+            if (!IsAddressValid(Va))
+            {
+                continue;
+            }
+
+            ULONG64 PhysicalAddress = Mi::GetPhysicalForVirtual(
+                (PPMLE)MiGetAddressSpace(), Va
+            );
+
+            if (PhysicalAddress != 0)
+            {
+                Mi::UnmapPage(
+                    (PPMLE)MiGetAddressSpace(),Va
+                );
+
+                FlushAddress(Va);
+
+                FreePhysical(PhysicalAddress);
+            }
+        }
+    }
+} // namespace Mm

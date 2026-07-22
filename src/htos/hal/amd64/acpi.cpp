@@ -49,7 +49,9 @@ namespace Hal
         }
     } // namespace
 
-    VOID InitializeAcpi()
+    CODESEG(".init")
+    VOID 
+    InitializeAcpi()
     {
         ACPI_RSDP* Rsdp = reinterpret_cast<PACPI_RSDP>(rsdp_request.response->address);
         Rtl::Print("ACPI REVISION: %u", Rsdp->Revision);

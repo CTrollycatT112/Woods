@@ -71,6 +71,7 @@ namespace Hal::Kd
         return (INT)IndexToBuffer;
     }
 
+    CODESEG(".init")
     VOID
     Configure(USHORT Port,
               ULONG  Baud)

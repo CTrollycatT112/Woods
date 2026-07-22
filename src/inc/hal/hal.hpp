@@ -119,7 +119,7 @@ namespace Hal
     RETURNS: VOID
 
     --*/
-
+    CODESEG(".init")
     VOID 
     InitializeAcpi();
 

@@ -27,6 +27,7 @@ KSPIN_LOCK KiDispatcherLock = { 1 };
 
 namespace Ki
 {
+    CODESEG(".init")
     VOID
     InitializePrcb(PKPRCB Processor)
     {
@@ -54,6 +55,7 @@ namespace Ki
         );
     }
 
+    CODESEG(".init")
     VOID
     InitializeDpc(PKDPC Dpc,
                   PKDEFFERED_ROUTINE Routine,
