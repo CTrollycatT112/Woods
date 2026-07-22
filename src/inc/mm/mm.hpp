@@ -59,7 +59,8 @@ namespace Mm
     RETURNS: PVOID
 
     --*/
-
+    
+    NODISCARD
     HTAPI
     PVOID
     AllocatePoolWithTag(POOL_TYPE Type, 
@@ -68,7 +69,7 @@ namespace Mm
 
     /*++
 
-    ROUTINE: FreePoolWithTag
+    ROUTINE: FreePool
 
     DESCRIPTION: Free an allocated block of memory from the kernel heap,
                  The block of memory will have a tag,
@@ -83,8 +84,8 @@ namespace Mm
 
     HTAPI
     VOID
-    FreePoolWithTag(PVOID   Pool,
-                    ULONG32 Tag);
+    FreePool(PVOID   Pool,
+             ULONG32 Tag);
 
     /*++
 

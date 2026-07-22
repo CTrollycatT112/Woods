@@ -7,12 +7,14 @@ AUTHOR: Trollycat
 ABSTRACT: Basic GOP mode before the GUI is initialized (LARP there won't be GUI anytime soon :troll:)
 
 --*/
+#include "htdef.hpp"
 #include "ke/amd64/amd64.hpp"
 
 #include "inbv/inbv.hpp"
 #include "inbv/inbvfont.hpp"
 
 #include "ke/spinlock.hpp"
+#include "mm/mm.hpp"
 #include "rtl/rtl.hpp"
 
 #include "limine.h"
@@ -52,39 +54,29 @@ ULONG64 InbvScreenHeight = 0;
 //
 KSPIN_LOCK InbvLock = { 0 };
 
-// PROBLEM:
-// WE DON'T HAVE MEMORY ALLOCATORS YET
-// THIS IS A TERRIBLE HACK BUT HERE I USE A STATIC POOL...
-// CHANGE THIS AS SOON AS POSSIBLE
-// TODO: DON'T DO THIS LOL
-STATIC BYTE  FlantermPool[1024 * 1024];
-STATIC QWORD FlantermPoolIndex = 0;
-
+//
+// MM
+//
+EXTERN_C {
 PVOID
 FlantermAllocate(QWORD Size)
 {
-    Size = (Size + 15) & ~15;
-
-    if (FlantermPoolIndex + Size > sizeof(FlantermPool))
-    {
-        return NULL;
-    }
-
-    PVOID Ptr = &FlantermPool[FlantermPoolIndex];
-    FlantermPoolIndex += Size;
-
-    return Ptr;
+    return Mm::AllocatePoolWithTag(NonPagedPool,
+                                   Size,
+                                   MAKE_TAG('I', 'n', 'b', 'v'));
 }
 
+//
+// NOTE: WE NEED SIZE HERE TO MATCH FLANTERM
+// EVEN THO IT'S UNUSED
+//
 VOID
 FlantermFree(PVOID Ptr, QWORD Size)
 {
-    // Yeah, literally do nothing
-    UNREFERENCED_PARAMETER(Ptr);
     UNREFERENCED_PARAMETER(Size);
+    Mm::FreePool(Ptr, MAKE_TAG('I', 'n', 'b', 'v'));
 }
-
-// ---- END OF STUPID SECTION...
+}
 
 namespace Inbv
 {

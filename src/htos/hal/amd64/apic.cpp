@@ -14,8 +14,6 @@ ABSTRACT: Hardware interrupt routing
 #include "ke/bug.hpp"
 #include "ke/processor.hpp"
 
-#include "rtl/rtl.hpp"
-
 #include "limine.h"
 #include "bugcodes.hpp"
 
@@ -37,7 +35,6 @@ ULONG64 HalBspLocalApicId = 0;
 
 STATIC ULONG64 HalLocalApic = 0;
 
-EXTERN limine_hhdm_request hhdm_request;
 EXTERN limine_rsdp_request rsdp_request;
 
 namespace Hal
@@ -80,7 +77,6 @@ namespace Hal
             }
 	    }
 
-        ASSERTMSG("APIC: Limine HHDM response is NULL", hhdm_request.response != NULL);
         if (HalLocalApic == 0)
         {
             HalLocalApic = HalMadt->LocalApicAddress;

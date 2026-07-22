@@ -141,4 +141,14 @@ ABSTRACT: Defines macro's used across the project (like NODISCARD)
 #define ALIGNOFF(P, Boundary)   ((ULONG_PTR)(P) & ((Boundary) - 1))
 #define IS_ALIGNED(P, Boundary) (ALIGNOFF(P, Boundary) == 0)
 
+#ifndef ALIGN_DOWN
+#define ALIGN_DOWN(Length, Boundary) \
+    ((ULONG_PTR)(Length) & ~((ULONG_PTR)(Boundary) - 1))
+#endif
+
+#ifndef ALIGN_UP
+#define ALIGN_UP(Length, Boundary) \
+    (ALIGN_DOWN((ULONG_PTR)(Length) + (Boundary) - 1, Boundary))
+#endif
+
 #define UNREACHABLE __builtin_unreachable()

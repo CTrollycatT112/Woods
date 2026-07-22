@@ -7,18 +7,22 @@ AUTHOR: Trollycat
 ABSTRACT: Kernel entry point
 
 --*/
-#include "hal/hal.hpp"
 #include "htbase.hpp"
-#include "ke/irql.hpp"
-#include "limine.h"
 #include "htversion.hpp"
+#include "limine.h"
 
+#include "ke/irql.hpp"
 #include "ke/amd64/amd64.hpp"
 #include "ke/processor.hpp"
 
-#include "rtl/rtl.hpp"
-#include "inbv/inbv.hpp"
+#include "hal/hal.hpp"
 #include "hal/kdcom.hpp"
+
+#include "mm/mi.hpp"
+
+#include "rtl/rtl.hpp"
+
+#include "inbv/inbv.hpp"
 
 VOLATILE
 LIMINE_REQUEST 
@@ -31,7 +35,7 @@ struct limine_stack_size_request stack_size_request =
     .id         = LIMINE_STACK_SIZE_REQUEST_ID,
     .revision   = 0,
     .response   = NULL,
-    .stack_size = 4080 * 8
+    .stack_size = PAGE_SIZE * 8
 };
 
 VOLATILE
@@ -44,27 +48,27 @@ struct limine_module_request module_request =
     .internal_modules      = NULL
 };
 
-VOLATILE
-LIMINE_REQUEST
-struct limine_memmap_request memmap_request =
-{
-    .id       = LIMINE_MEMMAP_REQUEST_ID,
-    .revision = 0,
-    .response = NULL
-};
-
-VOLATILE
-LIMINE_REQUEST
-struct limine_hhdm_request hhdm_request =
-{
-    .id       = LIMINE_HHDM_REQUEST_ID,
-    .revision = 0,
-    .response = NULL
-};
-
 STATIC KPRCB BootPrcb;
 
-ULONG64 MmPhysicalOffset = 0;
+//
+// TEMP HACK
+//
+KPROCESS KpKernelProcessInstance = {
+    .ProcessId          = 0,
+    .ProcessStatus      = 0,
+    .ProcessLinks       = { NULL,NULL},
+    .DirectoryBase      = 0,
+    .VadLock            = 0,
+    .Vads               = NULL,
+    .WorkingSetLock     = 0,
+    .UserRegionHint     = 0,
+    .ThreadCount        = 0,
+    .ThreadList         = NULL,
+    .ThreadListLock     = 0,
+    .DllRegionhint      = 0,
+    .Name               = { 0 }
+};
+
 
 namespace Ki
 {
@@ -85,35 +89,24 @@ namespace Ki
     VOID SystemStartup()
     {
         ASSERT(LIMINE_BASE_REVISION_SUPPORTED(BaseRevision) == TRUE);
-        MmPhysicalOffset = hhdm_request.response->offset;
 
+        Hal::Kd::Configure(SERIAL_COM1_BASE, SERIAL_BAUD_RATE_115200);
+        Hal::Kd::Write(SERIAL_COM1_BASE, (PCHAR)CLEAR_HOST_TERMINAL, 7);
+
+        Mm::InitializeMemoryManager();
         Inbv::Initialize();
 
-        Hal::Kd::Configure(SERIAL_COM1_BASE,
-                          SERIAL_BAUD_RATE_115200);
-        Hal::Kd::Write(SERIAL_COM1_BASE, 
-                    (PCHAR)CLEAR_HOST_TERMINAL,
-                        7);
+        Rtl::Print("%s\n", OS_VERSION_STRING);
+        Rtl::Print("-------------------------------------\n");
 
-        Rtl::Print("%s", OS_VERSION_STRING);
-
-        Rtl::Print("   ");
-        Rtl::Print("    ");
-
-
-        Rtl::Print("GDT Init... OK");
+        Rtl::Print("GDT Init... OK\n");
         Ki::InitializeGdt();
-
-        Rtl::Print("IDT Init.. Ok");
+        Rtl::Print("IDT Init... OK\n");
         Hal::InitializeIdt();
 
-        Rtl::Print("PRCB Init... Ok");
         InitializePrcb(&BootPrcb);
 
-        Rtl::Print("ACPI Init... Ok");
         Hal::InitializeAcpi();
-
-        Rtl::Print("    ");
 
         Ke::LowerIrql(PASSIVE_LEVEL);
 
@@ -121,5 +114,6 @@ namespace Ki
         {
             __asm__ volatile("hlt");
         }
-    } 
+    }
+
 } // namespace Ki

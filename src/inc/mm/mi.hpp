@@ -69,7 +69,7 @@ typedef struct _MMPFN
         struct
         {
             ULONG64 PageFrameNumber     : 37;
-            ULONG64 ValueType           : 8;
+            ULONG64 VaType              : 8;
             ULONG64 ReferenceCount      : 16;
         };
 
@@ -110,6 +110,15 @@ typedef struct _MMPFN_LIST
 #define MM_VAD_EXECUTE (1 << 2)
 #define MM_VAD_COMMIT  (1 << 3)
 #define MM_VAD_SECTION (1 << 4)
+
+//
+// VAD HELEPRS
+//
+#define VAD_RED    1
+#define VAD_BLACK  0
+
+#define MiIsVadRed(n)   ((n) != NULL && (n)->Rb    == VAD_RED)
+#define MiIsVadBlack(n) ((n) == NULL || (n)->Rb    == VAD_BLACK)
 
 //
 // SECTION PERMISSIONS
@@ -158,7 +167,7 @@ typedef struct _MM_VAD
 
     struct _MM_VAD* Parent;
     struct _MM_VAD* Left;
-    struct _MM_VAD* Rgiht;
+    struct _MM_VAD* Right;
 } MM_VAD, *PMM_VAD;
 
 namespace Mi
@@ -198,11 +207,11 @@ namespace Mi
 //
 // VAD PERMISSION MACRO'S
 //
-#define MiIsVadReadable(x)   (x & MM_VAD_READ)    == MM_VAD_READ
-#define MiIsVadWriteable(x)  (x & MM_VAD_WRITE)   == MM_VAD_WRITE
-#define MiIsVadExecutable(x) (x & MM_VAD_EXECUTE) == MM_VAD_EXECUTE
-#define MiIsVadCommit(x)     (x & MM_VAD_COMMIT)  == MM_VAD_COMMIT
-#define MiIsVadSection(x)    (x & MM_VAD_SECTION) == MM_VAD_SECTION
+#define MiIsVadReadable(x)   (((x) & MM_VAD_READ)    == MM_VAD_READ)
+#define MiIsVadWriteable(x)  (((x) & MM_VAD_WRITE)   == MM_VAD_WRITE)
+#define MiIsVadExecutable(x) (((x) & MM_VAD_EXECUTE) == MM_VAD_EXECUTE)
+#define MiIsVadCommit(x)     (((x) & MM_VAD_COMMIT)  == MM_VAD_COMMIT)
+#define MiIsVadSection(x)    (((x) & MM_VAD_SECTION) == MM_VAD_SECTION)
 
 namespace Mm
 {
@@ -410,8 +419,8 @@ typedef struct _MM_WSL
     MM_WSLE WorkingSetList[MAX_WORKING_SET_LIST_SIZE];
 } MM_WSL, *PMM_WSL;
 
-#define MiGetAddressSpace()  A386ReadCr3()
-#define MiSetAddressSpace(A) A386WriteCr3(A)
+#define MiGetAddressSpace()  Ke::A386ReadCr3()
+#define MiSetAddressSpace(A) Ke::A386WriteCr3(A)
 #define MiIndexLevel4(address) (((ULONG64)(address) & (0x1FFULL << 39ULL)) >> 39ULL)
 #define MiIndexLevel3(address) (((ULONG64)(address) & (0x1FFULL << 30ULL)) >> 30ULL)
 #define MiIndexLevel2(address) (((ULONG64)(address) & (0x1FFULL << 21ULL)) >> 21ULL)
@@ -533,6 +542,7 @@ namespace Mm
     NODISCARD
     ULONG64
     AllocatePhysicalPfn(MM_VA_TYPE Reason,
+                        ULONG64    MinimumPhysAddress,
                         PMMPFN*    Pfn);
 
     /*++
@@ -549,7 +559,42 @@ namespace Mm
     --*/
     NODISCARD
     ULONG64
-    AllocatePhysical(MM_VA_TYPE Reason);
+    AllocatePhysical(MM_VA_TYPE Reason,
+                     ULONG64    MinimumPhysAddress = 0);
+
+    /*++
+
+    ROUTINE: AllocatePhysicalZeroedPfn
+
+    DESCRIPTION: Grabs a zeroed page from the list and returns its PFN
+
+    ARGUMENTS: 
+        - Reason: The memory usage label for allocation
+        - Pfn:    Pointer to the page block
+
+    RETURNS: ULONG64
+
+    --*/
+    NODISCARD
+    ULONG64
+    AllocatePhysicalZeroedPfn(MM_VA_TYPE Reason,
+                              PMMPFN*    Pfn);
+
+    /*++
+
+    ROUTINE: AllocatePhysicalZeroed
+
+    DESCRIPTION: Grabs a zeroed page from the list (address return only)
+
+    ARGUMENTS: 
+        - Reason: The memory usage label for the allocation
+
+    RETURNS: ULONG64
+
+    --*/
+    NODISCARD
+    ULONG64
+    AllocatePhysicalZeroed(MM_VA_TYPE Reason);
 
     /*++
 
@@ -711,7 +756,6 @@ namespace Mi
     ARGUMENTS: 
         - AddressSpace: The page table base
         - Virtual:      The destination virtual address
-        - Physical:     The source physical address
         - Read:         Enable read permissions
         - Write:        Enable write permissions
         - User:         Enable user access
@@ -724,12 +768,10 @@ namespace Mi
     BOOLEAN
     FlagPage(PPMLE   AddressSpace,
              ULONG64 Virtual,
-             ULONG64 Physical,
              BOOLEAN Read,
              BOOLEAN Write,
              BOOLEAN User,
              BOOLEAN Executable);
-
 
     /*++
 

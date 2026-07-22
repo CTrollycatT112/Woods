@@ -23,7 +23,7 @@ fi
 qemu-system-x86_64 \
     -machine q35 \
     -cpu qemu64 \
-    -m 256M \
+    -m 2G \
     -drive if=pflash,format=raw,unit=0,file="$OVMFCODE",readonly=on \
     -drive if=pflash,format=raw,unit=1,file="$OVMFVARSLOCAL" \
     -drive format=raw,file="$DISKIMG" \

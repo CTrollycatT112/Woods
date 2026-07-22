@@ -10,7 +10,9 @@ ABSTRACT: Dispatcher module that handles interrupts, and DPC
 #include "htbase.hpp"
 #include "bugcodes.hpp"
 
-#include "httypes.hpp"
+#include "htstatus.hpp"
+#include "mm/mi.hpp"
+
 #include "ke/amd64/amd64.hpp"
 #include "ke/bug.hpp"
 #include "ke/irql.hpp"
@@ -141,6 +143,12 @@ namespace Ki
         else if (TrapFrame->Interrupt == 0x0E)
         {
             __asm__ volatile("mov %%cr2, %0" : "=r"(Cr2Value));
+
+            if (Mi::HandlePageFault(TrapFrame,Cr2Value) == STATUS_SUCCESS)
+            {
+                return;
+            }
+
             BugCheckCode = PAGE_FAULT_IN_NONPAGED_AREA;
         }
 

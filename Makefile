@@ -16,9 +16,9 @@ OBJPATH := $(BUILDPATH)/obj
 SYSTEM32PATH := $(BUILDPATH)/system32
 DRIVERSPATH := $(SYSTEM32PATH)/drivers
 
-LIMINEPATH := $(ROOTPATH)/vendor/limine
+LIMINEPATH   := $(ROOTPATH)/vendor/limine
 FLANTERMPATH := $(ROOTPATH)/vendor/flanterm
-PRINTFPATH := $(ROOTPATH)/vendor/printf
+TLSFPATH     := $(ROOTPATH)/vendor/tlsf
 INCPATH := $(ROOTPATH)/src/inc
 SCRIPTSPATH := $(ROOTPATH)/tools/scripts
 
@@ -58,10 +58,13 @@ FLANTERM_CORE_OBJ := $(OBJPATH)/flanterm/flanterm.o
 FLANTERM_FB_OBJ := $(OBJPATH)/flanterm/backends/fb.o
 FLANTERMOBJS := $(FLANTERM_CORE_OBJ) $(FLANTERM_FB_OBJ)
 
+TLSF_OBJ := $(OBJPATH)/tlsf/tlsf.o
+
 OBJS := $(CPPOBJS)
 OBJS += $(ASMOBJS)
 OBJS += $(S_OBJS)
 OBJS += $(FLANTERMOBJS)
+OBJS += $(TLSF_OBJ)
 
 DEPS := $(OBJS:.o=.d)
 
@@ -73,11 +76,11 @@ COMMONFLAGS := -ffreestanding -fno-builtin -fno-stack-protector -fno-stack-check
     -mno-red-zone -mgeneral-regs-only -mcmodel=kernel
 
 CFLAGS := $(COMMONFLAGS) -Wall -Wextra -Werror \
-    -I$(FLANTERMPATH)/src -MMD -MP
+    -I$(FLANTERMPATH)/src -I$(TLSFPATH) -MMD -MP
 
 CXXFLAGS := $(CXXSTD) $(COMMONFLAGS) -Wall -Wextra -Werror \
     -fno-exceptions -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables \
-    -I$(INCPATH) -I$(LIMINEPATH) -I$(FLANTERMPATH)/src -MMD -MP
+    -I$(INCPATH) -I$(LIMINEPATH) -I$(FLANTERMPATH)/src -I$(TLSFPATH) -MMD -MP
 
 LDFLAGS := -nostdlib -static -m elf_x86_64 -z max-page-size=0x1000 -T $(LINKSCRIPT)
 
@@ -128,6 +131,11 @@ $(OBJPATH)/flanterm/backends/%.o: $(FLANTERMPATH)/src/flanterm_backends/%.c
 	@printf "  $(COLOR_CYAN)[ CC ]$(COLOR_RESET)    %s\n" "$<"
 	@$(CC) $(CFLAGS) -c $< -o $@
 
+$(OBJPATH)/tlsf/%.o: $(TLSFPATH)/%.c
+	@mkdir -p $(dir $@)
+	@printf "  $(COLOR_CYAN)[ CXX ]$(COLOR_RESET)   %s\n" "$<"
+	@$(CXX) $(CXXFLAGS) -x c++ -DNDEBUG -c $< -o $@
+
 $(OBJPATH)/%.asm.o: src/%.asm
 	@mkdir -p $(dir $@)
 	@$(call LOGAS,$<)
@@ -136,7 +144,7 @@ $(OBJPATH)/%.asm.o: src/%.asm
 $(OBJPATH)/%.S.o: src/%.S
 	@mkdir -p $(dir $@)
 	@$(call LOGAS,$<)
-	@$(CC) $(CXXFLAGS) -c $< -o $@
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 disk:
 	@$(call LOGGEN,htos.img)

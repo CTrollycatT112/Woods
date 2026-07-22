@@ -12,6 +12,8 @@ ABSTRACT: X86_64 only definitions
 #include "htbase.hpp"
 #include "httypes.hpp"
 
+typedef struct _MM_VAD MM_VAD, *PMM_VAD;
+
 //
 // CR0 REGISTER
 //
@@ -137,8 +139,23 @@ typedef struct _KPRCB
 
 typedef struct _KPROCESS
 {
-    ULONG64 DirectoryTableBase;
-    PVOID   PageDirectory;
+    ULONG64    ProcessId;
+    ULONG64    ProcessStatus;
+    LIST_ENTRY ProcessLinks;
+
+    ULONG64    DirectoryBase;
+    KSPIN_LOCK VadLock;
+    PMM_VAD    Vads;
+    KSPIN_LOCK WorkingSetLock;
+    ULONG64    UserRegionHint;
+
+    ULONG64     ThreadCount;
+    PLIST_ENTRY ThreadList;
+    KSPIN_LOCK  ThreadListLock;
+
+    ULONG64 DllRegionhint;
+
+    WCHAR Name[128];
 } KPROCESS, *PKPROCESS;
 
 typedef struct PACKED _KDESCRIPTOR_TABLE_PTR

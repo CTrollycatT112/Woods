@@ -8,9 +8,9 @@ ABSTRACT: HPET TIMER for timing
 
 --*/
 #include "hal/hal.hpp"
-#include "rtl/rtl.hpp"
+#include "mm/mm.hpp"
 
-#include "limine.h"
+#include "rtl/rtl.hpp"
 
 #include "ke/amd64/amd64.hpp"
 
@@ -22,38 +22,6 @@ ABSTRACT: HPET TIMER for timing
 #define HPET_PERIOD_SHIFT             32
 #define HPET_CFG_OFF                  0ULL
 #define HPET_CFG_ENABLE               1ULL
-
-//
-// STUPID HACK ALERT!!!!
-// TODO:
-//
-//
-//
-// SO WE DONT HAVE MM YET
-// SO WE'RE HARD-CODING HPET INTO LIMINES HHDM
-// THIS IS REALLY DUMB
-// ALSO THIS FUNCTION SHOULDN'T BE HERE
-// FIX AS SOON AS MM IS A THING..
-//
-EXTERN
-VOLATILE
-struct limine_hhdm_request hhdm_request;
-
-EXTERN_C
-PVOID
-MmMapIoSpace(QWORD PhysAddress, QWORD Size)
-{
-    UNREFERENCED_PARAMETER(Size);
-    if (!hhdm_request.response) {
-        return NULL; 
-    }
-
-    QWORD VirtualAddress = hhdm_request.response->offset + PhysAddress;
-    return reinterpret_cast<PVOID>(VirtualAddress);
-}
-// END OF SECTION
-//
-//
 
 STATIC PACPI_HPET_TABLE HpetTable = NULL;
 STATIC PACPI_HPET Hpet            = NULL;
@@ -75,7 +43,7 @@ namespace Hal
                 HpetTable->Address        != 0);
 
         Hpet = reinterpret_cast<PACPI_HPET>
-        (MmMapIoSpace(HpetTable->Address,
+        (Mm::MapIoSpace(HpetTable->Address,
                             sizeof(ACPI_HPET)));
 
         ASSERTMSG("FAILED TO INITIALIZE HPET", Hpet != NULL);

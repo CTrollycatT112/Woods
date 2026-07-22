@@ -226,6 +226,22 @@ EXTERN_C {
         Buffer[Index] = '\0';
 
     }
+
+    // IMPORTANT NOTE:
+    // DO NOT TOUCH THIS
+    // THIS IS FOR COMPATIBILITY WITH TLSF
+    // THAT'S IT
+    // DO NOT CALL OR USE THIS FUNCTION
+    int printf(const char* format, ...)
+    {
+        CHAR Buffer[512] = { 0 };
+        VA_LIST Args;
+        __builtin_va_start(Args, format);
+        ::vsnprintf(Buffer, format, Args);
+        __builtin_va_end(Args);
+        Inbv::WriteString(Buffer);
+        return 0; 
+    }
 }
 
 namespace Rtl
