@@ -30,8 +30,14 @@ EXTERN_C {
            PCVOID Src,
            QWORD Count)
     {
-        __asm__ volatile("rep movsb" : "+D"(Dest), "+S"(Src), "+c"(Count) : : "memory");
-        return Dest;
+        PVOID Original = Dest;
+
+        __asm__ volatile("cld\n\t"
+                        "rep movsb" 
+                        : "+D"(Dest), "+S"(Src), "+c"(Count) 
+                        : 
+                        : "memory");
+        return Original;
     }
 
     PVOID 

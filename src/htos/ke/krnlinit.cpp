@@ -8,6 +8,7 @@ ABSTRACT: Kernel entry point
 
 --*/
 #include "htbase.hpp"
+#include "htdef.hpp"
 #include "htversion.hpp"
 #include "limine.h"
 
@@ -110,8 +111,6 @@ namespace Ki
         Hal::InitializeAcpi();
 
         Ke::LowerIrql(PASSIVE_LEVEL);
-
-        Mm::FreeInitCode();
 
         while (TRUE)
         {
