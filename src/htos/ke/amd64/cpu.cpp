@@ -11,7 +11,6 @@ ABSTRACT: AMD64 Specific Code
 #include "ke/amd64/amd64.hpp"
 #include "ke/asm386.hpp"
 
-
 #include "rtl/rtl.hpp"
 
 STATIC KDESCRIPTOR_TABLE     DescriptorTable;

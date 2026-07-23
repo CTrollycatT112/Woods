@@ -297,7 +297,7 @@ namespace Mm
         ULONG64 RawEnd   = reinterpret_cast<ULONG64>(__InitEnd);
         ULONG64 RawSize  = RawEnd - RawStart;
 
-        Rtl::KdPrint(L"RECLAIMING SECTION .init: %lu bytes", RawSize);
+        Rtl::KdPrint(L"RECLAIMING SECTION .init: %lu bytes\n", RawSize);
 
         for (ULONG64 Va = InitStart; Va < InitEnd; Va += PAGE_SIZE)
         {
@@ -317,7 +317,6 @@ namespace Mm
                 );
 
                 FlushAddress(Va);
-
                 FreePhysical(PhysicalAddress);
             }
         }

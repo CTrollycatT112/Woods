@@ -442,7 +442,9 @@ EXTERN PPMLE      MiKernelAddressSpace;
 EXTERN ULONG64    MmKernelBase;
 EXTERN ULONG64    MmKernelEnd;
 
+#ifndef PAGE_SIZE
 #define PAGE_SIZE 4096
+#endif
 
 namespace Mm
 {
@@ -1130,32 +1132,6 @@ namespace Mm
     --*/
     VOID 
     RemoveWslEntry(PMM_WSLE Entry);
-
-    /*++
-
-    ROUTINE: CreateSection
-
-    DESCRIPTION: Creates a section object
-
-    ARGUMENTS:
-        - SectionObject: Pointer to receive the section object
-        - MaximumSize:   Maximum size of the section
-        - Protection:    Section protection flags
-        - Flags:         Section creation flags
-        - Attributes:    Object attributes
-        - FileObject:    Backing file object
-
-    RETURNS: HTSTATUS
-
-    --*/
-    NODISCARD
-    HTSTATUS
-    CreateSection(PMM_SECTION*        SectionObject,
-                  ULONG64             MaximumSize,
-                  ULONG               Protection,
-                  ULONG               Flags,
-                  POBJECT_ATTRIBUTES  Attributes,
-                  PFILE_OBJECT        FileObject);
 
     /*++
 

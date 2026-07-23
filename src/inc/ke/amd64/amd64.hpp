@@ -13,6 +13,9 @@ ABSTRACT: X86_64 only definitions
 #include "httypes.hpp"
 
 typedef struct _MM_VAD MM_VAD, *PMM_VAD;
+typedef struct _OBJECT_HEADER OBJECT_HEADER, *POBJECT_HEADER;
+
+typedef DWORD ACCESS_MASK, *PACCESS_MASK;
 
 //
 // CR0 REGISTER
@@ -108,6 +111,12 @@ typedef VOLATILE ULONG64 KSPIN_LOCK, *PKSPIN_LOCK;
 
 typedef VOID(*PKDEFFERED_ROUTINE)(PKDPC Dpc, PVOID DefferedContext);
 
+typedef struct _KHANDLE_TABLE
+{
+    ULONG64     HandleCount;
+    PLIST_ENTRY HandleList;
+} KHANDLE_TABLE, *PKHANDLE_TABLE;
+
 typedef struct PACKED _KDPC
 {
     ULONG64            ProcessorNumber;
@@ -152,6 +161,8 @@ typedef struct _KPROCESS
     ULONG64     ThreadCount;
     PLIST_ENTRY ThreadList;
     KSPIN_LOCK  ThreadListLock;
+
+    KHANDLE_TABLE HandleTable;
 
     ULONG64 DllRegionhint;
 
@@ -413,21 +424,11 @@ typedef struct _MADT_LOCAL_APIC_ADDRESS_OVERRIDE {
     ULONG64     LocalApicAddress;
 } MADT_LOCAL_APIC_ADDRESS_OVERRIDE, * PMADT_LOCAL_APIC_ADDRESS_OVERRIDE;
 
-typedef struct _OBJECT_ATTRIBUTES
+typedef enum _KPOCESSOR_MODE
 {
-    UNICODE_STRING Name;
-    PVOID          Parent;
-    ULONG          Attributes;
-} OBJECT_ATTRIBUTES, *POBJECT_ATTRIBUTES;
-
-typedef struct _FILE_OBJECT
-{
-    PVOID          FsContext;
-    PVOID          FsContext2;
-    ULONG64        CurrentByteOffset;
-    UNICODE_STRING FileName;
-    ULONG          Flags;
-} FILE_OBJECT, *PFILE_OBJECT;
+    KernelMode = 0,
+    UserMode   = 1
+} KPROCESSOR_MODE;
 
 EXTERN PACPI_RSDT HalAcpiRsdt;
 EXTERN ULONG64    MmPhysicalOffset;

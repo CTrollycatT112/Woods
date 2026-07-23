@@ -127,8 +127,8 @@ namespace Ki
     VOID
     DispatchHardware(PKTRAP_FRAME TrapFrame)
     {
-        Rtl::Print("UNEXPECTED HARDWARE INTERRUPT VECTOR: %llu", TrapFrame->Interrupt);
-        ASSERTMSG("NO DRIVER HANDLER EXISTS YET, FREEZING", TRUE != TRUE);
+        Rtl::Print("UNEXPECTED HARDWARE INTERRUPT VECTOR: %llu\n", TrapFrame->Interrupt);
+        ASSERTMSG("NO DRIVER HANDLER EXISTS YET, FREEZING\n", TRUE != TRUE);
     }
 
     EXTERN_C

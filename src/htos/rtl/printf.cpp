@@ -256,7 +256,6 @@ namespace Rtl
         ::vsnprintf(Buffer, Format, List);
 
         Inbv::WriteString(Buffer);
-        Inbv::WriteString("\r\n");
 
         UINT Length = 0;
         while (Buffer[Length] != '\0' && Length < 512)
@@ -288,7 +287,6 @@ namespace Rtl
         AnsiBuffer[Length] = '\0';
 
         Inbv::WriteString(AnsiBuffer);
-        Inbv::WriteString("\r\n");
     }
 
     HTAPI
@@ -296,13 +294,13 @@ namespace Rtl
     KdPrintFromArgumentList(PCWSTR Format,
                             VA_LIST List)
     {
-        WCHAR Buffer[512] = {  0 };
+        WCHAR Buffer[512] = { 0 };
 
         ::vsnwprintf(Buffer,
-                     const_cast<PWSTR>(Format),
-                     List);
+                    const_cast<PWSTR>(Format),
+                    List);
 
-        CHAR AnsiBuffer[512] = {  0 };
+        CHAR AnsiBuffer[512] = { 0 };
         UINT Length          = 0;
 
         while (Buffer[Length] != L'\0' && Length < 511)
@@ -314,10 +312,7 @@ namespace Rtl
         AnsiBuffer[Length] = '\0';
 
         Hal::Kd::Write(SERIAL_COM1_BASE,
-                       AnsiBuffer,
-                       Length);
-        Hal::Kd::Write(SERIAL_COM1_BASE,
-                       (PCHAR)"\r\n",
-                       2);
+                    AnsiBuffer,
+                    Length);
     }
 } // namespace Rtl

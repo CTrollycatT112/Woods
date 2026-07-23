@@ -8,7 +8,6 @@ ABSTRACT: Kernel entry point
 
 --*/
 #include "htbase.hpp"
-#include "htdef.hpp"
 #include "htversion.hpp"
 #include "limine.h"
 
@@ -20,6 +19,7 @@ ABSTRACT: Kernel entry point
 #include "hal/kdcom.hpp"
 
 #include "mm/mi.hpp"
+#include "ob/ob.hpp"
 
 #include "rtl/rtl.hpp"
 
@@ -57,7 +57,7 @@ STATIC KPRCB BootPrcb;
 KPROCESS KpKernelProcessInstance = {
     .ProcessId          = 0,
     .ProcessStatus      = 0,
-    .ProcessLinks       = { NULL,NULL},
+    .ProcessLinks       = { NULL, NULL },
     .DirectoryBase      = 0,
     .VadLock            = 0,
     .Vads               = NULL,
@@ -66,10 +66,13 @@ KPROCESS KpKernelProcessInstance = {
     .ThreadCount        = 0,
     .ThreadList         = NULL,
     .ThreadListLock     = 0,
+    .HandleTable        = {
+        .HandleCount    = 0,
+        .HandleList     = NULL
+    },
     .DllRegionhint      = 0,
     .Name               = { 0 }
 };
-
 
 namespace Ki
 {
@@ -86,31 +89,52 @@ namespace Ki
     --*/
     EXTERN_C
     CODESEG(".text")
-
     NORETURN
     VOID SystemStartup()
     {
         ASSERT(LIMINE_BASE_REVISION_SUPPORTED(BaseRevision) == TRUE);
 
+        //
+        // CONFIGURE KDCOM
+        //
         Hal::Kd::Configure(SERIAL_COM1_BASE, SERIAL_BAUD_RATE_115200);
         Hal::Kd::Write(SERIAL_COM1_BASE, (PCHAR)CLEAR_HOST_TERMINAL, 7);
 
+        //
+        // TABLES
+        //
+        Ki::InitializeGdt();
+        Hal::InitializeIdt();
+
+        //
+        // MEMORY AND DISPLAY
+        //
         Mm::InitializeMemoryManager();
         Inbv::Initialize();
 
-        Rtl::Print("%s\n", OS_VERSION_STRING);
-        Rtl::Print("-------------------------------------\n");
+        //
+        // WELCOME
+        //
+        Rtl::Print("%s\r\n\n", OS_VERSION_STRING);
 
-        Rtl::Print("GDT Init... OK\n");
-        Ki::InitializeGdt();
-        Rtl::Print("IDT Init... OK\n");
-        Hal::InitializeIdt();
-
+        //
+        // ACPI AND PRCB
+        //
         InitializePrcb(&BootPrcb);
-
         Hal::InitializeAcpi();
+        
+        //
+        // OBJECT MANAGER
+        //
+        Ob::InitializeObjectManager();
+        Rtl::Print("\r\n");
+        Ob::DumpDirectory(Ob::GetRootDirectory(), ObDumpToBoth);
 
+        //
+        // CLEANUP
+        //
         Ke::LowerIrql(PASSIVE_LEVEL);
+        Mm::FreeInitCode();
 
         while (TRUE)
         {

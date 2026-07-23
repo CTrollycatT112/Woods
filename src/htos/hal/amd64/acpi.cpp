@@ -54,19 +54,19 @@ namespace Hal
     InitializeAcpi()
     {
         ACPI_RSDP* Rsdp = reinterpret_cast<PACPI_RSDP>(rsdp_request.response->address);
-        Rtl::Print("ACPI REVISION: %u", Rsdp->Revision);
+        Rtl::Print("ACPI REVISION: %u\r\n", Rsdp->Revision);
         
         if (Rsdp->Revision >= 2 && Rsdp->Xsdt)
         {
             UsingXsdt   = TRUE;
             HalAcpiRsdt = reinterpret_cast<PACPI_RSDT>(Rsdp->Xsdt + MmPhysicalOffset);
-            Rtl::Print("XSDT AT: %p", HalAcpiRsdt);
+            Rtl::Print("XSDT AT: %p\r\n", HalAcpiRsdt);
         }
         else
         {
             HalAcpiRsdt = reinterpret_cast<PACPI_RSDT>(static_cast<ULONG64>(Rsdp->Rsdt) + MmPhysicalOffset);
             UsingXsdt   = FALSE;
-            Rtl::Print("RSDT AT: %p", HalAcpiRsdt);
+            Rtl::Print("RSDT AT: %p\r\n", HalAcpiRsdt);
         }
 
         Hal::InitializeHpet();

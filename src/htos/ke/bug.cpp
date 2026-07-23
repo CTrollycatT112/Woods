@@ -117,25 +117,25 @@ namespace Ke
             case 0x0000013D: BugCheckName = "CRITICAL_INITIALIZATION_FAILURE"; break;
         }
 
-        Rtl::Print(L":(");
-        Rtl::Print(L"Your PC ran into a problem and needs to restart.");
-        Rtl::Print(L"Stop code: %s", BugCheckName);
+        Rtl::Print(L":(\n");
+        Rtl::Print(L"Your PC ran into a problem and needs to restart.\n");
+        Rtl::Print(L"Stop code: %s\n", BugCheckName);
 
         if (BugCheckCode == KMODE_EXCEPTION_NOT_HANDLED && BugCheckParameter3 > 0 && BugCheckParameter1 >= 0xFFFF800000000000)
         {
-            Rtl::Print(L"");
-            Rtl::Print(L"--- ASSERTION DETAILS ---");
-            Rtl::Print(L"Expression: %s", reinterpret_cast<PCSTR>(BugCheckParameter1));
-            Rtl::Print(L"File:       %s", reinterpret_cast<PCSTR>(BugCheckParameter2));
-            Rtl::Print(L"Line:       %u", static_cast<ULONG>(BugCheckParameter3));
+            Rtl::Print(L"\n");
+            Rtl::Print(L"--- ASSERTION DETAILS ---\n");
+            Rtl::Print(L"Expression: %s\n", reinterpret_cast<PCSTR>(BugCheckParameter1));
+            Rtl::Print(L"File:       %s\n", reinterpret_cast<PCSTR>(BugCheckParameter2));
+            Rtl::Print(L"Line:       %u\n", static_cast<ULONG>(BugCheckParameter3));
             
             if (BugCheckParameter4 >= 0xFFFF800000000000)
             {
-                Rtl::Print(L"Message:    %s", reinterpret_cast<PCSTR>(BugCheckParameter4));
+                Rtl::Print(L"Message:    %s\n", reinterpret_cast<PCSTR>(BugCheckParameter4));
             }
         }
 
-        Rtl::KdPrint(L"*** STOP: %s (%p, %p, %p, %p)",
+        Rtl::KdPrint(L"*** STOP: %s (%p, %p, %p, %p)\n",
                     BugCheckName,
                     (PVOID)BugCheckParameter1,
                     (PVOID)BugCheckParameter2,
@@ -145,7 +145,7 @@ namespace Ke
         PKPRCB Prcb = Ke::QueryCurrentProcessor();
         if (Prcb != NULL)
         {
-            Rtl::KdPrint(L"Bug check called on processor %p", (PVOID)(ULONG64)Prcb->ProcessorNumber);
+            Rtl::KdPrint(L"Bug check called on processor %p\n", (PVOID)(ULONG64)Prcb->ProcessorNumber);
         }
 
         if (TrapFrame != NULL)
@@ -156,18 +156,18 @@ namespace Ke
             ULONG64 Cr8Value;
             __asm__ volatile("mov %%cr8, %0" : "=r"(Cr8Value));
 
-            Rtl::KdPrint(L"Rax: %p Rbx: %p Rcx: %p", (PVOID)TrapFrame->Rax, (PVOID)TrapFrame->Rbx, (PVOID)TrapFrame->Rcx);
-            Rtl::KdPrint(L"Rdx: %p Rdi: %p Rsi: %p", (PVOID)TrapFrame->Rdx, (PVOID)TrapFrame->Rdi, (PVOID)TrapFrame->Rsi);
-            Rtl::KdPrint(L"R8:  %p R9:  %p R10: %p", (PVOID)TrapFrame->R8,  (PVOID)TrapFrame->R9,  (PVOID)TrapFrame->R10);
-            Rtl::KdPrint(L"R11: %p R12: %p R13: %p", (PVOID)TrapFrame->R11, (PVOID)TrapFrame->R12, (PVOID)TrapFrame->R13);
-            Rtl::KdPrint(L"R14: %p R15: %p Rsp: %p", (PVOID)TrapFrame->R14, (PVOID)TrapFrame->R15, (PVOID)Rsp);
-            Rtl::KdPrint(L"Rbp: %p Rip: %p EFlags: %p", (PVOID)TrapFrame->Rbp, (PVOID)Rip, (PVOID)TrapFrame->EFlags);
-            Rtl::KdPrint(L"CS:  %p DS: %p SS: %p", (PVOID)TrapFrame->SegCs, (PVOID)TrapFrame->SegDs, (PVOID)TrapFrame->SegSs);
-            Rtl::KdPrint(L"ES:  %p FS: %p GS: %p", (PVOID)TrapFrame->SegEs, (PVOID)TrapFrame->SegFs, (PVOID)TrapFrame->SegGs);
-            Rtl::KdPrint(L"DR0: %p DR1: %p DR2: %p", (PVOID)TrapFrame->Dr0, (PVOID)TrapFrame->Dr1, (PVOID)TrapFrame->Dr2);
-            Rtl::KdPrint(L"DR3: %p DR6: %p DR7: %p", (PVOID)TrapFrame->Dr3, (PVOID)TrapFrame->Dr6, (PVOID)TrapFrame->Dr7);
-            Rtl::KdPrint(L"ERR: %p CR3: %p INT: %p", (PVOID)TrapFrame->Error, (PVOID)TrapFrame->Cr3, (PVOID)TrapFrame->Interrupt);
-            Rtl::KdPrint(L"CR2: %p RSP0: %p IRQL: %p", (PVOID)Cr2Value, (PVOID)(Prcb ? Prcb->TaskState.Rsp : 0), (PVOID)Cr8Value);
+            Rtl::KdPrint(L"Rax: %p Rbx: %p Rcx: %p\n", (PVOID)TrapFrame->Rax, (PVOID)TrapFrame->Rbx, (PVOID)TrapFrame->Rcx);
+            Rtl::KdPrint(L"Rdx: %p Rdi: %p Rsi: %p\n", (PVOID)TrapFrame->Rdx, (PVOID)TrapFrame->Rdi, (PVOID)TrapFrame->Rsi);
+            Rtl::KdPrint(L"R8:  %p R9:  %p R10: %p\n", (PVOID)TrapFrame->R8,  (PVOID)TrapFrame->R9,  (PVOID)TrapFrame->R10);
+            Rtl::KdPrint(L"R11: %p R12: %p R13: %p\n", (PVOID)TrapFrame->R11, (PVOID)TrapFrame->R12, (PVOID)TrapFrame->R13);
+            Rtl::KdPrint(L"R14: %p R15: %p Rsp: %p\n", (PVOID)TrapFrame->R14, (PVOID)TrapFrame->R15, (PVOID)Rsp);
+            Rtl::KdPrint(L"Rbp: %p Rip: %p EFlags: %p\n", (PVOID)TrapFrame->Rbp, (PVOID)Rip, (PVOID)TrapFrame->EFlags);
+            Rtl::KdPrint(L"CS:  %p DS: %p SS: %p\n", (PVOID)TrapFrame->SegCs, (PVOID)TrapFrame->SegDs, (PVOID)TrapFrame->SegSs);
+            Rtl::KdPrint(L"ES:  %p FS: %p GS: %p\n", (PVOID)TrapFrame->SegEs, (PVOID)TrapFrame->SegFs, (PVOID)TrapFrame->SegGs);
+            Rtl::KdPrint(L"DR0: %p DR1: %p DR2: %p\n", (PVOID)TrapFrame->Dr0, (PVOID)TrapFrame->Dr1, (PVOID)TrapFrame->Dr2);
+            Rtl::KdPrint(L"DR3: %p DR6: %p DR7: %p\n", (PVOID)TrapFrame->Dr3, (PVOID)TrapFrame->Dr6, (PVOID)TrapFrame->Dr7);
+            Rtl::KdPrint(L"ERR: %p CR3: %p INT: %p\n", (PVOID)TrapFrame->Error, (PVOID)TrapFrame->Cr3, (PVOID)TrapFrame->Interrupt);
+            Rtl::KdPrint(L"CR2: %p RSP0: %p IRQL: %p\n", (PVOID)Cr2Value, (PVOID)(Prcb ? Prcb->TaskState.Rsp : 0), (PVOID)Cr8Value);
         }
 
         while (TRUE)

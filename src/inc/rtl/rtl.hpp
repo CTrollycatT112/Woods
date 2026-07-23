@@ -10,6 +10,7 @@ ABSTRACT: Standard library functions and RTL wrappers
 #pragma once
 
 #include "htbase.hpp"
+#include "mm/mm.hpp"
 
 
 //
@@ -21,6 +22,10 @@ ABSTRACT: Standard library functions and RTL wrappers
 // Converts (c) to lowercase
 //
 #define RtlLowerChar(c)               ((c) >= 'A' && (c) <= 'Z' ? (c) + ' ' : (c))
+
+#ifndef RTL_CONSTANT_STRING
+#define RTL_CONSTANT_STRING(s)  { sizeof(s)-sizeof((s)[0]), sizeof(s), const_cast<PWCH>(s) }
+#endif
 
 EXTERN_C {
         
@@ -101,6 +106,57 @@ EXTERN_C {
 
     --*/
     NODISCARD ULONG64 wcslen(LPCWSTR String);
+
+    /*++
+
+    ROUTINE: strdup
+
+    DESCRIPTION: Clones a string by allocating new memory,
+                 and copying contents
+
+    ARGUMENTS: String - The string to clone
+
+    RETURNS: PSTR
+
+    --*/
+
+    NODISCARD PCWSTR strdup(PCWSTR String);
+
+    /*++
+
+    ROUTINE: strtok
+
+    DESCRIPTION: Split a wide string into pieces
+
+    ARGUMENTS: Input     - The string to split
+               Delimiter - The char that breaks the string
+               Tokens    - The output tokens
+               Count     - The number of tokens
+
+    RETURNS: BOOLEAN
+
+    --*/
+    NODISCARD BOOLEAN strtok(PCWSTR  Input,
+                             WCHAR   Delimiter,
+                             PWSTR** Tokens,
+                             ULONG*  Count);
+
+    /*++
+
+    ROUTINE: strncmp
+
+    DESCRIPTION: Compare two wide strings
+
+    ARGUMENTS: String1         - The first string to compare
+               String2         - The second string to compare
+               CaseInsensitive - If the compare should ignore case
+
+    RETURNS: LONG
+
+    --*/
+    NODISCARD LONG strncmp(PCWSTR  String1,
+                           PCWSTR  String2,
+                           BOOLEAN CaseInsensitive);
 
     /*++
 
@@ -254,6 +310,109 @@ namespace Rtl
 
     /*++
 
+    ROUTINE: CloneString
+
+    DESCRIPTION: Runtime wrapper for strdup
+
+    ARGUMENTS: String - String to clone
+
+    RETURNS: PCWSTR
+
+    --*/
+    NODISCARD
+    INLINE
+    HTAPI
+    PCWSTR
+    CloneString(PCWSTR String)
+    {
+        return ::strdup(String);
+    }
+
+    /*++
+
+    ROUTINE: SplitString
+
+    DESCRIPTION: RTL wrapper for strtok
+
+    ARGUMENTS: Input     - The string to split
+               Delimiter - The char that breaks the string
+               Tokens    - The output tokens
+               Count     - The number of tokens
+
+    RETURNS: BOOLEAN
+
+    --*/
+    NODISCARD
+    INLINE
+    HTAPI
+    BOOLEAN
+    SplitString(PCWSTR  Input,
+                WCHAR   Delimiter,
+                PWSTR** Tokens,
+                ULONG*  Count)
+    {
+        return ::strtok(Input, Delimiter, Tokens, Count);
+    }
+
+    /*++
+
+    ROUTINE: CompareString
+
+    DESCRIPTION: RTL wrapper for strncmp
+
+    ARGUMENTS: String1         - The first string to compare
+               String2         - The second string to compare
+               CaseInsensitive - If the compare should ignore case
+
+    RETURNS: LONG
+
+    --*/
+    NODISCARD
+    INLINE
+    HTAPI
+    LONG
+    CompareString(PCWSTR  String1,
+                  PCWSTR  String2,
+                  BOOLEAN CaseInsensitive)
+    {
+        return ::strncmp(String1, String2, CaseInsensitive);
+    }
+
+    /*++
+
+    ROUTINE: FreeSplitString
+
+    DESCRIPTION: Free memory used by split tokens
+
+    ARGUMENTS: Tokens - The token array to free
+               Count  - The number of token blocks
+
+    RETURNS: VOID
+
+    --*/
+    INLINE
+    HTAPI
+    VOID
+    FreeSplitString(PWSTR** Tokens, ULONG Count)
+    {
+        if (!Tokens)
+        {
+            return;
+        }
+
+        for (ULONG I = 0; I < Count; I++)
+        {
+            if (Tokens[I])
+            {
+                Mm::FreePool(Tokens[I], MAKE_TAG('R', 't', 'l', ' '));
+            }
+        }
+
+        Mm::FreePool(Tokens, MAKE_TAG('R', 't', 'l', ' '));
+    }
+
+    /*++
+
     ROUTINE: AnsiStringLength
 
     DESCRIPTION: RTL wrapper for strlen
@@ -288,7 +447,7 @@ namespace Rtl
     INLINE
     HTAPI
     ULONG64
-    StringLength(PWSTR String)
+    StringLength(PCWSTR String)
     {
         return ::wcslen(String);
     }
@@ -323,6 +482,27 @@ namespace Rtl
         }
     }
 
+    /*++
+
+    ROUTINE: InitUnicodeString
+
+    DESCRIPTION: Fill a unicode string from a wide string
+
+    ARGUMENTS: String   - The unicode string to fill
+               SrcString - The wide string to copy from
+
+    RETURNS: VOID
+
+    --*/
+    INLINE
+    VOID
+    InitUnicodeString(PUNICODE_STRING String,
+                      PWSTR           SrcString)
+    {
+        String->Buffer        = SrcString;
+        String->Length        = StringLength(SrcString);
+        String->MaximumLength = String->Length + 1;
+    }
     
     /*++
 

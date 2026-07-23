@@ -351,7 +351,7 @@ namespace Mi
 
             DumpVadNode(Vad->Left);
 
-            Rtl::Print("%p - %p type %x %s",
+            Rtl::Print("%p - %p type %x %s\n",
                         Vad->Start,
                         Vad->End,
                         Vad->Type,
@@ -512,7 +512,7 @@ namespace Mi
 
         if (Process->Vads == NULL)
         {
-            Rtl::Print("DUMP: NO VADS FOUND...");
+            Rtl::Print("DUMP: NO VADS FOUND...\n");
         }
         else
         {
